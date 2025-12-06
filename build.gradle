@@ -34,8 +34,6 @@ dependencies {
 
     // Dependency resolver at runtime
     implementation 'com.alessiodp.libby:libby-bukkit:2.0.0-SNAPSHOT'
-    // S3 storage backend
-    compileOnly 'io.minio:minio:8.5.12'
 }
 
 allprojects {
