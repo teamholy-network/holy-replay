@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+// TODO: Use NIO for better performance
 public class DefaultReplaySaver implements IReplaySaver {
 
     public final static File DIR = new File(ReplaySystem.getInstance().getDataFolder() + "/replays/");
@@ -43,6 +44,7 @@ public class DefaultReplaySaver implements IReplaySaver {
 
         try {
             if (!file.exists()) file.createNewFile();
+
 
             try (FileOutputStream fileOut = new FileOutputStream(file);
                  GZIPOutputStream gOut = new GZIPOutputStream(fileOut);

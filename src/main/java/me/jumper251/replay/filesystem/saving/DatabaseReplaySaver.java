@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+// TODO: Use NIO for better performance and implement en2do to upload the repalys into the mongo database
 public class DatabaseReplaySaver implements IReplaySaver {
 
     public static Map<String, ReplayInfo> replayCache = new HashMap<>();
