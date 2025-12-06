@@ -18,7 +18,6 @@ import me.jumper251.replay.replaysystem.Replay;
 import me.jumper251.replay.replaysystem.utils.ReplayCleanup;
 import me.jumper251.replay.utils.Metrics;
 import me.jumper251.replay.utils.ReplayManager;
-import me.jumper251.replay.utils.Updater;
 
 
 public class ReplaySystem extends JavaPlugin {
@@ -26,7 +25,6 @@ public class ReplaySystem extends JavaPlugin {
 	
 	public static ReplaySystem instance;
 	
-	public static Updater updater;
 	public static Metrics metrics;
 	
 	public final static String PREFIX = "§8[§3Replay§8] §r§7";
@@ -85,8 +83,7 @@ public class ReplaySystem extends JavaPlugin {
 		} else {
 			ReplaySaver.register(new DefaultReplaySaver());
 		}
-		
-		updater = new Updater();
+
 		metrics = new Metrics(this, 2188);
 		
 		if (ConfigManager.CLEANUP_REPLAYS > 0) {
