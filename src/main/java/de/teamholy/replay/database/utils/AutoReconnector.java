@@ -1,0 +1,27 @@
+package de.teamholy.replay.database.utils;
+
+
+
+
+
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import de.teamholy.replay.database.DatabaseRegistry;
+import de.teamholy.replay.database.MySQLDatabase;
+
+public class AutoReconnector extends BukkitRunnable{
+
+	protected Plugin plugin;
+	public AutoReconnector(Plugin plugin){
+		this.plugin = plugin;
+		this.runTaskTimerAsynchronously(plugin, 20*60, 20*60);
+	}
+	
+	@Override
+	public void run() {
+		MySQLDatabase database = (MySQLDatabase) DatabaseRegistry.getDatabase();
+		database.update("USE `"+database.getDatabase()+"`");
+	}
+
+}

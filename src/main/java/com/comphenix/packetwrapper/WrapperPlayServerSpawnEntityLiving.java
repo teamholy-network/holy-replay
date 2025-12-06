@@ -31,9 +31,9 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.injector.PacketConstructor;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 
-import me.jumper251.replay.replaysystem.utils.entities.EntityMappings;
-import me.jumper251.replay.utils.VersionUtil;
-import me.jumper251.replay.utils.VersionUtil.VersionEnum;
+import de.teamholy.replay.replaysystem.utils.entities.EntityMappings;
+import de.teamholy.replay.utils.VersionUtil;
+import de.teamholy.replay.utils.VersionUtil.VersionEnum;
 
 public class WrapperPlayServerSpawnEntityLiving extends AbstractPacket {
 	public static final PacketType TYPE =

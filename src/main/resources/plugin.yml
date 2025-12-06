@@ -1,6 +1,6 @@
 name: AdvancedReplay
 version: '${version}'
-main: me.jumper251.replay.ReplaySystem
+main: de.teamholy.replay.ReplaySystem
 author: Jumper251
 depend: [ProtocolLib]
 api-version: 1.13

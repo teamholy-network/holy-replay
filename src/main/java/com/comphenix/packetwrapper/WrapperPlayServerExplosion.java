@@ -5,7 +5,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedParticle;
-import me.jumper251.replay.utils.VersionUtil;
+import de.teamholy.replay.utils.VersionUtil;
 import org.bukkit.Sound;
 import org.bukkit.util.Vector;
 

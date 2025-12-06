@@ -30,8 +30,8 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 
-import me.jumper251.replay.utils.VersionUtil;
-import me.jumper251.replay.utils.VersionUtil.VersionEnum;
+import de.teamholy.replay.utils.VersionUtil;
+import de.teamholy.replay.utils.VersionUtil.VersionEnum;
 
 public class WrapperPlayServerNamedEntitySpawn extends AbstractPacket {
     public static final PacketType TYPE = PacketType.Play.Server.NAMED_ENTITY_SPAWN;

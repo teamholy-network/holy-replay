@@ -20,11 +20,10 @@ package com.comphenix.packetwrapper;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.EnumWrappers.PlayerInfoAction;
 import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.google.common.collect.Sets;
-import me.jumper251.replay.utils.VersionUtil;
+import de.teamholy.replay.utils.VersionUtil;
 
 import java.util.List;
 import java.util.Set;

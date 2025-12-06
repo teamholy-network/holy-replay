@@ -23,8 +23,8 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers.EntityUseAction;
 
-import me.jumper251.replay.utils.VersionUtil;
-import me.jumper251.replay.utils.VersionUtil.VersionEnum;
+import de.teamholy.replay.utils.VersionUtil;
+import de.teamholy.replay.utils.VersionUtil.VersionEnum;
 
 import org.bukkit.World;
 import org.bukkit.entity.Entity;

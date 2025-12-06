@@ -20,7 +20,7 @@ package com.comphenix.packetwrapper;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
-import me.jumper251.replay.utils.VersionUtil;
+import de.teamholy.replay.utils.VersionUtil;
 
 import java.util.ArrayList;
 import java.util.List;

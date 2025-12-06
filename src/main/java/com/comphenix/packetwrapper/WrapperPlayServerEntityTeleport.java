@@ -19,7 +19,7 @@
 package com.comphenix.packetwrapper;
 
 import com.comphenix.protocol.events.InternalStructure;
-import me.jumper251.replay.utils.VersionUtil;
+import de.teamholy.replay.utils.VersionUtil;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 

@@ -37,7 +37,7 @@ dependencies {
 }
 
 allprojects {
-    group = 'me.jumper251.replay'
+    group = 'de.teamholy.replay'
     version = '1.8.16'
 
     apply plugin: 'java'
@@ -67,8 +67,8 @@ allprojects {
 shadowJar {
     archiveFileName = 'Replay.jar'
 
-    relocate 'com.alessiodp.libby', 'me.jumper251.replay.libs.com.alessiodp.libby'
-    relocate 'com.comphenix.packetwrapper', 'me.jumper251.replay.libs.com.comphenix.packetwrapper'
+    relocate 'com.alessiodp.libby', 'de.teamholy.replay.libs.com.alessiodp.libby'
+    relocate 'com.comphenix.packetwrapper', 'de.teamholy.replay.libs.com.comphenix.packetwrapper'
 }
 
 processResources {

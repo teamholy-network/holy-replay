@@ -20,7 +20,7 @@ package com.comphenix.packetwrapper;
 
 import java.util.UUID;
 
-import me.jumper251.replay.utils.IntEnum;
+import de.teamholy.replay.utils.IntEnum;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 
@@ -30,8 +30,8 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.injector.PacketConstructor;
 
-import me.jumper251.replay.utils.VersionUtil;
-import me.jumper251.replay.utils.VersionUtil.VersionEnum;
+import de.teamholy.replay.utils.VersionUtil;
+import de.teamholy.replay.utils.VersionUtil.VersionEnum;
 import org.bukkit.util.Vector;
 
 public class WrapperPlayServerSpawnEntity extends AbstractPacket {

@@ -1,7 +1,7 @@
 package com.comphenix.packetwrapper.old;
 
 
-import me.jumper251.replay.utils.IntEnum;
+import de.teamholy.replay.utils.IntEnum;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 
