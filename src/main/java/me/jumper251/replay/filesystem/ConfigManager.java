@@ -23,9 +23,6 @@ public class ConfigManager {
 	public static File sqlFile = new File(ReplaySystem.getInstance().getDataFolder(), "mysql.yml");
 	public static FileConfiguration sqlCfg = YamlConfiguration.loadConfiguration(sqlFile);
 
-	public static File s3File = new File(ReplaySystem.getInstance().getDataFolder(), "s3.yml");
-	public static FileConfiguration s3Cfg = YamlConfiguration.loadConfiguration(s3File);
-
 	public static File file = new File(ReplaySystem.getInstance().getDataFolder(), "config.yml");
 	public static FileConfiguration cfg = YamlConfiguration.loadConfiguration(file);
 	
@@ -38,9 +35,6 @@ public class ConfigManager {
 	public static boolean WORLD_RESET;
 
 	public static ReplayProgression PROGRESS_TYPE = ReplayProgressType.XP_BAR;
-
-	public static boolean USE_S3;
-
 
 	public static ReplayQuality QUALITY = ReplayQuality.HIGH;
 	
@@ -58,19 +52,6 @@ public class ConfigManager {
 
 			try {
 				sqlCfg.save(sqlFile);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		if (!s3File.exists()) {
-			s3Cfg.set("endpoint_url", "https://example.com/");
-			s3Cfg.set("access_key", "123qwertz456");
-			s3Cfg.set("secret_key", "987yxcv654");
-			s3Cfg.set("bucket_name", "replays");
-
-			try {
-				s3Cfg.save(s3File);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -139,10 +120,7 @@ public class ConfigManager {
 
 		PROGRESS_TYPE = ReplayProgressType.valueOf(cfg.getString("replaying.progress_display", ReplayProgressType.getDefault().name()).toUpperCase());
 
-		USE_S3 = cfg.getBoolean("general.use_s3");
-
 		if (USE_DATABASE) {
-			
 			String host = sqlCfg.getString("host");
 			int port = sqlCfg.getInt("port", 3306);
 			String username = sqlCfg.getString("username");
@@ -154,10 +132,7 @@ public class ConfigManager {
 			MySQLDatabase mysql = new MySQLDatabase(host, port, database, username, password, prefix, properties);
 			DatabaseRegistry.registerDatabase(mysql);
 			DatabaseRegistry.getDatabase().getService().createReplayTable();
-			
 		}
-
-
 		ItemConfig.loadData();
 	}
 	

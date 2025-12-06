@@ -41,46 +41,46 @@ public class ReplayListener extends AbstractListener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onInteract(PlayerInteractEvent e) {
     if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
-      Player p = e.getPlayer();
-      if (ReplayHelper.replaySessions.containsKey(p.getName())) {
+      var player = e.getPlayer();
+      if (ReplayHelper.replaySessions.containsKey(player.getName())) {
         e.setCancelled(true);
 
-        Replayer replayer = ReplayHelper.replaySessions.get(p.getName());
-        if (p.getItemInHand() == null) {
+        Replayer replayer = ReplayHelper.replaySessions.get(player.getName());
+        if (player.getItemInHand() == null) {
           return;
         }
-        if (p.getItemInHand().getItemMeta() == null) {
+        if (player.getItemInHand().getItemMeta() == null) {
           return;
         }
 
-        ItemMeta meta = p.getItemInHand().getItemMeta();
-        ItemConfigType itemType = ItemConfig.getByIdAndName(p.getItemInHand().getType(),
+        ItemMeta meta = player.getItemInHand().getItemMeta();
+        ItemConfigType itemType = ItemConfig.getByIdAndName(player.getItemInHand().getType(),
             meta.getDisplayName().replaceAll("§", "&"));
 
         if (itemType == ItemConfigType.PAUSE) {
           replayer.setPaused(!replayer.isPaused());
-          ReplayHelper.sendTitle(p, " ", "§c❙❙", 20);
+          ReplayHelper.sendTitle(player, " ", "§c❙❙", 20);
         }
 
         if (itemType == ItemConfigType.FORWARD) {
           replayer.getUtils().forward();
-          ReplayHelper.sendTitle(p, " ", "§a»»", 20);
+          ReplayHelper.sendTitle(player, " ", "§a»»", 20);
 
         }
         if (itemType == ItemConfigType.BACKWARD) {
           replayer.getUtils().backward();
-          ReplayHelper.sendTitle(p, " ", "§c««", 20);
+          ReplayHelper.sendTitle(player, " ", "§c««", 20);
 
         }
 
         if (itemType == ItemConfigType.RESUME) {
           replayer.setPaused(!replayer.isPaused());
-          ReplayHelper.sendTitle(p, " ", "§a➤", 20);
+          ReplayHelper.sendTitle(player, " ", "§a➤", 20);
 
         }
 
         if (itemType == ItemConfigType.SPEED) {
-          if (p.isSneaking()) {
+          if (player.isSneaking()) {
             if (replayer.getSpeed() < 1) {
               replayer.setSpeed(1);
             } else if (replayer.getSpeed() == 1) {
@@ -105,16 +105,16 @@ public class ReplayListener extends AbstractListener {
         }
 
         if (itemType == ItemConfigType.TELEPORT) {
-          ReplayHelper.createTeleporter(p, replayer, 1);
+          ReplayHelper.createTeleporter(player, replayer, 1);
         }
 
         ItemConfigOption pauseResume = ItemConfig.getItem(ItemConfigType.RESUME);
 
         if (itemType == ItemConfigType.PAUSE || itemType == ItemConfigType.RESUME) {
           if (replayer.isPaused()) {
-            p.getInventory().setItem(pauseResume.getSlot(), ReplayHelper.getResumeItem());
+            player.getInventory().setItem(pauseResume.getSlot(), ReplayHelper.getResumeItem());
           } else {
-            p.getInventory().setItem(pauseResume.getSlot(), ReplayHelper.getPauseItem());
+            player.getInventory().setItem(pauseResume.getSlot(), ReplayHelper.getPauseItem());
           }
         }
 
@@ -126,9 +126,8 @@ public class ReplayListener extends AbstractListener {
   @SuppressWarnings("deprecation")
   @EventHandler
   public void onClick(InventoryClickEvent e) {
-    if (e.getWhoClicked() instanceof Player) {
-      Player p = (Player) e.getWhoClicked();
-      if (ReplayHelper.replaySessions.containsKey(p.getName())) {
+    if (e.getWhoClicked() instanceof Player player) {
+      if (ReplayHelper.replaySessions.containsKey(player.getName())) {
         e.setCancelled(true);
 
         // Avoid IncompatibleClassChangeError < 1.21
@@ -136,23 +135,24 @@ public class ReplayListener extends AbstractListener {
             : LegacyUtils.getInventoryTitle(e);
 
         if (title.equalsIgnoreCase("§7Teleporter")) {
-          Replayer replayer = ReplayHelper.replaySessions.get(p.getName());
+          Replayer replayer = ReplayHelper.replaySessions.get(player.getName());
 
-          if (e.getCurrentItem() != null && e.getCurrentItem().getItemMeta() != null
-              && e.getCurrentItem().getItemMeta().getDisplayName() != null) {
+          if (e.getCurrentItem() != null && e.getCurrentItem().getItemMeta() != null) {
+            e.getCurrentItem().getItemMeta().getDisplayName();
             if (e.getCurrentItem().getType() == MaterialBridge.PLAYER_HEAD.toMaterial()) {
-              String owner = e.getCurrentItem().getItemMeta().getDisplayName().replaceAll("§6", "");
+              String owner = e.getCurrentItem().getItemMeta().getDisplayName()
+                  .replaceAll("§6", "");
               if (replayer.getNPCList().containsKey(owner)) {
                 INPC npc = replayer.getNPCList().get(owner);
-                p.teleport(npc.getLocation());
+                player.teleport(npc.getLocation());
               }
             } else if (e.getCurrentItem().getType() == Material.ARROW) {
               if (e.getSlot() == e.getInventory().getSize() - 1) {
                 int nextPage = e.getCurrentItem().getAmount();
-                ReplayHelper.createTeleporter(p, replayer, nextPage);
+                ReplayHelper.createTeleporter(player, replayer, nextPage);
               } else if (e.getSlot() == e.getInventory().getSize() - 9) {
                 int previousPage = e.getCurrentItem().getAmount();
-                ReplayHelper.createTeleporter(p, replayer, previousPage);
+                ReplayHelper.createTeleporter(player, replayer, previousPage);
               }
             }
 
@@ -166,7 +166,7 @@ public class ReplayListener extends AbstractListener {
 
   @EventHandler
   public void onFood(FoodLevelChangeEvent e) {
-    Player p = (Player) e.getEntity();
+    var p = (Player) e.getEntity();
     if (ReplayHelper.replaySessions.containsKey(p.getName())) {
       e.setFoodLevel(20);
       e.setCancelled(true);
@@ -175,9 +175,8 @@ public class ReplayListener extends AbstractListener {
 
   @EventHandler
   public void onDamage(EntityDamageEvent e) {
-    if (e.getEntity() instanceof Player) {
-      Player p = (Player) e.getEntity();
-      if (ReplayHelper.replaySessions.containsKey(p.getName())) {
+    if (e.getEntity() instanceof Player player) {
+      if (ReplayHelper.replaySessions.containsKey(player.getName())) {
         e.setCancelled(true);
       }
     }
@@ -185,13 +184,13 @@ public class ReplayListener extends AbstractListener {
 
   @EventHandler
   public void onTeleport(PlayerTeleportEvent e) {
-    Player p = e.getPlayer();
-    if (ReplayHelper.replaySessions.containsKey(p.getName())) {
-      Replayer replayer = ReplayHelper.replaySessions.get(p.getName());
+    var player = e.getPlayer();
+    if (ReplayHelper.replaySessions.containsKey(player.getName())) {
+      Replayer replayer = ReplayHelper.replaySessions.get(player.getName());
 
       for (INPC npc : replayer.getNPCList().values()) {
         npc.despawn();
-        npc.respawn(p);
+        npc.respawn(player);
       }
     }
   }
@@ -203,9 +202,7 @@ public class ReplayListener extends AbstractListener {
       Replayer replayer = ReplayHelper.replaySessions.get(p.getName());
       replayer.stop();
       replayer.getSession().resetPlayer();
-
     }
-
   }
 
   @EventHandler
@@ -238,8 +235,8 @@ public class ReplayListener extends AbstractListener {
   public void onMove(PlayerMoveEvent e) {
     Player p = e.getPlayer();
     if (ReplayHelper.replaySessions.containsKey(p.getName())) {
-      Chunk oldChunk = e.getFrom().getChunk();
-      Chunk newChunk = e.getTo().getChunk();
+      var oldChunk = e.getFrom().getChunk();
+      var newChunk = e.getTo().getChunk();
 
       if (oldChunk.getWorld() != newChunk.getWorld() || oldChunk.getX() != newChunk.getX()
           || oldChunk.getZ() != newChunk.getZ()) {
