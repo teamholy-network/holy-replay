@@ -20,9 +20,6 @@ import de.teamholy.replay.utils.LogUtils;
 
 public class ConfigManager {
 
-	public static File sqlFile = new File(ReplaySystem.getInstance().getDataFolder(), "mysql.yml");
-	public static FileConfiguration sqlCfg = YamlConfiguration.loadConfiguration(sqlFile);
-
 	public static File file = new File(ReplaySystem.getInstance().getDataFolder(), "config.yml");
 	public static FileConfiguration cfg = YamlConfiguration.loadConfiguration(file);
 	
@@ -41,21 +38,6 @@ public class ConfigManager {
 	public static String CHAT_FORMAT;
 	
 	public static void loadConfigs() {
-		if(!sqlFile.exists()){
-			sqlCfg.set("host", "localhost");
-			sqlCfg.set("port", 3306);
-			sqlCfg.set("username", "username");
-			sqlCfg.set("database", "database");
-			sqlCfg.set("password", "password");
-			sqlCfg.set("prefix", "");
-			sqlCfg.set("properties", MySQLDatabase.DEFAULT_PROPERTIES);
-
-			try {
-				sqlCfg.save(sqlFile);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 		
 		if (!file.exists()) {
 			LogUtils.log("Creating Config files...");
@@ -63,8 +45,6 @@ public class ConfigManager {
 			cfg.set("general.max_length", 3600);
 			cfg.set("general.record_on_startup", false);
 			cfg.set("general.save_on_stop", false);
-			cfg.set("general.use_mysql", false);
-			cfg.set("general.use_s3", false);
 			cfg.set("general.use_offline_skins", false);
 			cfg.set("general.quality", "high");
 			cfg.set("general.cleanup_replays", -1);
@@ -120,19 +100,6 @@ public class ConfigManager {
 
 		PROGRESS_TYPE = ReplayProgressType.valueOf(cfg.getString("replaying.progress_display", ReplayProgressType.getDefault().name()).toUpperCase());
 
-		if (USE_DATABASE) {
-			String host = sqlCfg.getString("host");
-			int port = sqlCfg.getInt("port", 3306);
-			String username = sqlCfg.getString("username");
-			String database = sqlCfg.getString("database");
-			String password = sqlCfg.getString("password");
-			String prefix = sqlCfg.getString("prefix", "");
-			List<String> properties = (List<String>) sqlCfg.getList("properties", MySQLDatabase.DEFAULT_PROPERTIES);
-
-			MySQLDatabase mysql = new MySQLDatabase(host, port, database, username, password, prefix, properties);
-			DatabaseRegistry.registerDatabase(mysql);
-			DatabaseRegistry.getDatabase().getService().createReplayTable();
-		}
 		ItemConfig.loadData();
 	}
 	

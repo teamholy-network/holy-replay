@@ -8,7 +8,6 @@ import de.teamholy.replay.filesystem.saving.DefaultReplaySaver;
 import de.teamholy.replay.filesystem.saving.ReplaySaver;
 import de.teamholy.replay.replaysystem.Replay;
 import de.teamholy.replay.replaysystem.utils.ReplayCleanup;
-import de.teamholy.replay.utils.Metrics;
 import de.teamholy.replay.utils.ReplayManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -16,7 +15,6 @@ public class ReplaySystem extends JavaPlugin {
 
   public static ReplaySystem instance;
 
-  public static Metrics metrics;
   public final static String PREFIX = "§8[§3Replay§8] §r§7";
 
 
@@ -35,10 +33,6 @@ public class ReplaySystem extends JavaPlugin {
 
     var start = System.currentTimeMillis();
 
-    getLogger().info(
-        "Loading Replay v" + getDescription().getVersion() + " by " + getDescription().getAuthors()
-            .get(0));
-
     ConfigManager.loadConfigs();
     ReplayManager.register();
 
@@ -48,12 +42,6 @@ public class ReplaySystem extends JavaPlugin {
           .forEach(info -> DatabaseReplaySaver.replayCache.put(info.getID(), info));
     } else {
       ReplaySaver.register(new DefaultReplaySaver());
-    }
-
-    metrics = new Metrics(this, 2188);
-
-    if (ConfigManager.CLEANUP_REPLAYS > 0) {
-      ReplayCleanup.cleanupReplays();
     }
 
     getLogger().info("Finished (" + (System.currentTimeMillis() - start) + "ms)");
