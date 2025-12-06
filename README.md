@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'com.github.Jumper251:AdvancedReplay:VERSION'
+    compileOnly 'de.teamholy.replay:holyreplay:VERSION'
 }
 ```
 
