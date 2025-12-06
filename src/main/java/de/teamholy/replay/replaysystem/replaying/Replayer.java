@@ -13,6 +13,9 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+
+
+
 import de.teamholy.replay.ReplaySystem;
 import de.teamholy.replay.api.IReplayHook;
 import de.teamholy.replay.api.ReplayAPI;
@@ -131,17 +134,7 @@ public class Replayer {
 
             List<ActionData> list = data.getActions().get(tick);
             for (ActionData action : list) {
-
                 utils.handleAction(action, data, mode);
-
-                if (action.getType() == ActionType.CUSTOM) {
-                    if (ReplayAPI.getInstance().getHookManager().isRegistered()) {
-                        for (IReplayHook hook : ReplayAPI.getInstance().getHookManager().getHooks()) {
-                            hook.onPlay(action, Replayer.this);
-                        }
-                    }
-                }
-
             }
 
             if (tick == 0) data.getActions().remove(tick);

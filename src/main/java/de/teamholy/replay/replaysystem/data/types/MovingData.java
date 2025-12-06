@@ -40,7 +40,4 @@ public class MovingData extends PacketData {
 	public double getZ() {
 		return z;
 	}
-
-	
-	
 }

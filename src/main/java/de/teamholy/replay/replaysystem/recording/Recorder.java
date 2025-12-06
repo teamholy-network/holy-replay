@@ -88,22 +88,6 @@ public class Recorder {
 
                 packetRecorder.getPacketData().keySet().removeAll(tmpMap.keySet());
 
-
-                if (ReplayAPI.getInstance().getHookManager().isRegistered()) {
-
-                    for (IReplayHook hook : ReplayAPI.getInstance().getHookManager().getHooks()) {
-                        for (String names : players) {
-                            List<PacketData> customList = hook.onRecord(names);
-                            customList.stream().filter(Objects::nonNull).forEach(customData -> {
-                                ActionData customAction = new ActionData(currentTick, ActionType.CUSTOM, names, customData);
-                                addData(currentTick, customAction);
-                            });
-
-                        }
-                    }
-                }
-
-
                 Recorder.this.currentTick++;
 
                 // In static mode, implement rolling buffer by removing old data

@@ -23,8 +23,7 @@ import de.teamholy.replay.utils.VersionUtil;
 import de.teamholy.replay.utils.VersionUtil.VersionEnum;
 import org.bukkit.util.Vector;
 
-
-public class PacketNPC implements INPC{
+public class PacketNPC implements INPC {
 
 	private int id;
 

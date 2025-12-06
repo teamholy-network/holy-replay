@@ -46,8 +46,7 @@ public class PacketRecorder extends AbstractListener {
 	private List<Integer> spawnedTNT;
 	
 	private Recorder recorder;
-	
-	private ReplayOptimizer optimizer;
+  private ReplayOptimizer optimizer;
 	
 	private AbstractListener compListener, listener;
 	

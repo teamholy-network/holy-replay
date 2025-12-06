@@ -1,128 +1,357 @@
 package de.teamholy.replay.api;
 
-import java.util.List;
-
-import de.teamholy.replay.replaysystem.recording.StaticModeManager;
-import de.teamholy.replay.replaysystem.replaying.Replayer;
-import org.bukkit.entity.Player;
-
+import de.teamholy.replay.ReplaySystem;
 import de.teamholy.replay.filesystem.saving.IReplaySaver;
 import de.teamholy.replay.replaysystem.Replay;
+import de.teamholy.replay.replaysystem.data.ActionData;
+import de.teamholy.replay.replaysystem.data.ReplayInfo;
+import de.teamholy.replay.replaysystem.data.types.ChatData;
+import de.teamholy.replay.replaysystem.recording.StaticModeManager;
 import de.teamholy.replay.replaysystem.replaying.ReplayHelper;
-import de.teamholy.replay.utils.ReplayManager;
-import de.teamholy.replay.utils.fetcher.Consumer;
+import de.teamholy.replay.replaysystem.replaying.Replayer;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.entity.Player;
 
-public class ReplayAPI {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
-	private static ReplayAPI instance;
-	
-	private HookManager hookManager;
-	
-	private ReplayAPI() {
-		this.hookManager = new HookManager();
-	}
-	
-	public void registerHook(IReplayHook hook) {
-		this.hookManager.registerHook(hook);
-	}
-	
-	public void unregisterHook(IReplayHook hook) {
-		this.hookManager.unregisterHook(hook);
-	}
-	
-	public Replay recordReplay(String name, List<Player> players) {
-		Replay replay = new Replay();
-		if (name != null) replay.setId(name);
-		replay.recordAll(players);
-		
-		return replay;
-	}
+/**
+ * Hauptklasse für das ReplaySystem API.
+ * Bietet alle Funktionen für Aufnahme, Wiedergabe und Verwaltung von Replays.
+ *
+ * @author TeamHoly
+ */
+public class ReplayAPI implements IReplayAPI {
 
-	public Replay recordReplay(String name, Player... players) {
-		return recordReplay(name, players);
-	}
-	
-	public void stopReplay(String name, boolean save) {
-		stopReplay(name, save, false);
-	}
-	
-	public void stopReplay(String name, boolean save, boolean ignoreEmpty) {
-		if (Replay.ACTIVE_REPLAYS.containsKey(name)) {
-			Replay replay = Replay.ACTIVE_REPLAYS.get(name);
-			
-			boolean shouldSave = save && (replay.getRecorder().getData().getActions().size() > 0 || !ignoreEmpty);
-			if (replay.isRecording()) replay.getRecorder().stop(shouldSave);
-		}
-	}
-	
-	public void playReplay(String name, Player watcher) {
-		if (ReplaySaver.exists(name) && !ReplayHelper.replaySessions.containsKey(watcher.getName())) {
-			ReplaySaver.load(name, new Consumer<Replay>() {
-				
-				@Override
-				public void accept(Replay replay) {
-					replay.play(watcher);
-					
-				}
-			});
-		}
-	}
+    private static ReplayAPI instance;
+    private final HookManager hookManager;
+    private final IReplaySaver replaySaver;
 
-	public void jumpToReplayTime(Player watcher, Integer second) {
-		if (ReplayHelper.replaySessions.containsKey(watcher.getName())) {
-			Replayer replayer = ReplayHelper.replaySessions.get(watcher.getName());
-			if (replayer != null) {
-				int duration = replayer.getReplay().getData().getDuration() / 20;
-				if (second > 0 && second <= duration) {
-					replayer.getUtils().jumpTo(second);
-				}
-			}
-		}
-	}
-	
-	public void registerReplaySaver(IReplaySaver replaySaver) {
-		ReplaySaver.register(replaySaver);
-	}
+    private ReplayAPI() {
+        this.hookManager = new HookManager();
+        this.replaySaver = ReplaySystem.getInstance().getReplaySaver();
+    }
 
-	public IReplaySaver getReplaySaver() {
-		return ReplaySaver.getReplaySaver();
-	}
-	
-	public HookManager getHookManager() {
-		return hookManager;
-	}
-	
-	// ========== Static Mode Methods ==========
+    // ========== Recording ==========
 
-	/**
-	 * Saves the last configured minutes from static mode continuous recording
-	 * @param customId Custom ID for the replay, or null for auto-generated ID
-	 * @return The ID of the saved replay, or null if static mode is not running
-	 */
-	public String saveStaticReplay(String customId) {
-		return StaticModeManager.getInstance().saveLastMinutes(customId);
-	}
+    @Override
+    public Replay startRecording(String replayId, Player... players) {
+        return startRecording(replayId, Arrays.asList(players));
+    }
 
-	/**
-	 * Checks if static mode is currently recording
-	 * @return true if static mode is active and recording
-	 */
-	public boolean isStaticModeRecording() {
-		return StaticModeManager.getInstance().isRecording();
-	}
+    @Override
+    public Replay startRecording(String replayId, List<Player> players) {
+        Replay replay = new Replay();
+        if (replayId != null) {
+            replay.setId(replayId);
+        }
+        replay.recordAll(players);
+        return replay;
+    }
 
-	/**
-	 * Gets the current duration of static mode recording in seconds
-	 * @return Duration in seconds, or 0 if not recording
-	 */
-	public int getStaticModeDuration() {
-		return StaticModeManager.getInstance().getCurrentDuration();
-	}
+    @Override
+    public CompletableFuture<Void> stopRecording(String replayId, boolean save) {
+        return stopRecording(replayId, save, false);
+    }
 
+    @Override
+    public CompletableFuture<Void> stopRecording(String replayId, boolean save, boolean ignoreEmpty) {
+        return CompletableFuture.runAsync(() -> {
+            if (Replay.ACTIVE_REPLAYS.containsKey(replayId)) {
+                Replay replay = Replay.ACTIVE_REPLAYS.get(replayId);
+                boolean shouldSave = save && (!replay.getRecorder().getData().getActions().isEmpty() || !ignoreEmpty);
 
-	public static ReplayAPI getInstance() {
-		if (instance == null) instance = new ReplayAPI();
-		
-		return instance;
-	}
+                if (replay.isRecording()) {
+                    replay.getRecorder().stop(shouldSave);
+                }
+            }
+        });
+    }
+
+    // ========== Playback ==========
+
+    @Override
+    public CompletableFuture<Optional<Replay>> playReplay(String replayId, Player watcher) {
+        CompletableFuture<Optional<Replay>> future = new CompletableFuture<>();
+
+        replaySaver.replayExists(replayId).whenCompleteAsync((exists, throwable) -> {
+            if (throwable != null) {
+                future.completeExceptionally(throwable);
+                return;
+            }
+
+            if (exists && !ReplayHelper.replaySessions.containsKey(watcher.getName())) {
+                replaySaver.loadReplay(replayId, replay -> {
+                    if (replay != null) {
+                        replay.play(watcher);
+                        future.complete(Optional.of(replay));
+                    } else {
+                        future.complete(Optional.empty());
+                    }
+                });
+            } else {
+                future.complete(Optional.empty());
+            }
+        });
+
+        return future;
+    }
+
+    @Override
+    public boolean stopPlayback(Player watcher) {
+        if (ReplayHelper.replaySessions.containsKey(watcher.getName())) {
+            Replayer replayer = ReplayHelper.replaySessions.get(watcher.getName());
+            if (replayer != null) {
+                replayer.stop();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean pausePlayback(Player watcher) {
+        if (ReplayHelper.replaySessions.containsKey(watcher.getName())) {
+            Replayer replayer = ReplayHelper.replaySessions.get(watcher.getName());
+            if (replayer != null && !replayer.isPaused()) {
+                replayer.setPaused(true);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean resumePlayback(Player watcher) {
+        if (ReplayHelper.replaySessions.containsKey(watcher.getName())) {
+            Replayer replayer = ReplayHelper.replaySessions.get(watcher.getName());
+            if (replayer != null && replayer.isPaused()) {
+                replayer.setPaused(false);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean jumpToTime(Player watcher, int seconds) {
+        if (ReplayHelper.replaySessions.containsKey(watcher.getName())) {
+            Replayer replayer = ReplayHelper.replaySessions.get(watcher.getName());
+            if (replayer != null) {
+                int duration = replayer.getReplay().getData().getDuration() / 20;
+                if (seconds > 0 && seconds <= duration) {
+                    replayer.getUtils().jumpTo(seconds);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean setPlaybackSpeed(Player watcher, double speed) {
+        if (ReplayHelper.replaySessions.containsKey(watcher.getName())) {
+            Replayer replayer = ReplayHelper.replaySessions.get(watcher.getName());
+            if (replayer != null && speed > 0) {
+                replayer.setSpeed(speed);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ========== Loading & Management ==========
+
+    @Override
+    public CompletableFuture<Optional<Replay>> loadReplay(String replayId) {
+        CompletableFuture<Optional<Replay>> future = new CompletableFuture<>();
+
+        replaySaver.loadReplay(replayId, replay -> future.complete(Optional.ofNullable(replay)));
+
+        return future;
+    }
+
+    @Override
+    public CompletableFuture<Optional<ReplayInfo>> loadReplayInfo(String replayId) {
+        // TODO: Implementierung für schnelles Metadaten-Laden
+        // Aktuell wird das komplette Replay geladen
+        return loadReplay(replayId).thenApply(replay ->
+            replay.map(Replay::getReplayInfo)
+        );
+    }
+
+    @Override
+    public CompletableFuture<Boolean> replayExists(String replayId) {
+        return replaySaver.replayExists(replayId);
+    }
+
+    @Override
+    public CompletableFuture<Void> deleteReplay(String replayId) {
+        return CompletableFuture.runAsync(() -> replaySaver.deleteReplay(replayId));
+    }
+
+    @Override
+    public CompletableFuture<Void> saveReplay(Replay replay) {
+        return CompletableFuture.runAsync(() -> replaySaver.saveReplay(replay));
+    }
+
+    @Override
+    public CompletableFuture<List<String>> listAllReplays() {
+        // TODO: Muss in IReplaySaver implementiert werden
+        return CompletableFuture.completedFuture(new ArrayList<>());
+    }
+
+    @Override
+    public CompletableFuture<List<String>> listReplaysByDuration(int minDurationSeconds) {
+        return listAllReplays().thenCompose(allIds -> {
+            List<CompletableFuture<Optional<ReplayInfo>>> futures = allIds.stream()
+                    .map(this::loadReplayInfo)
+                    .collect(Collectors.toList());
+
+            return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                    .thenApply(v -> {
+                        List<String> filtered = new ArrayList<>();
+                        for (int i = 0; i < allIds.size(); i++) {
+                            Optional<ReplayInfo> info = futures.get(i).join();
+                            if (info.isPresent() && info.get().getDuration() >= minDurationSeconds * 20) {
+                                filtered.add(allIds.get(i));
+                            }
+                        }
+                        return filtered;
+                    });
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<String>> listReplaysByTimeRange(long fromTimestamp, long toTimestamp) {
+        return listAllReplays().thenCompose(allIds -> {
+            List<CompletableFuture<Optional<ReplayInfo>>> futures = allIds.stream()
+                    .map(this::loadReplayInfo)
+                    .collect(Collectors.toList());
+
+            return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                    .thenApply(v -> {
+                        List<String> filtered = new ArrayList<>();
+                        for (int i = 0; i < allIds.size(); i++) {
+                            Optional<ReplayInfo> info = futures.get(i).join();
+                            if (info.isPresent()) {
+                                long time = info.get().getTime();
+                                if (time >= fromTimestamp && time <= toTimestamp) {
+                                    filtered.add(allIds.get(i));
+                                }
+                            }
+                        }
+                        return filtered;
+                    });
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<Replay>> loadReplays(List<String> replayIds) {
+        List<CompletableFuture<Optional<Replay>>> futures = replayIds.stream()
+                .map(this::loadReplay)
+                .collect(Collectors.toList());
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> futures.stream()
+                        .map(CompletableFuture::join)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(Collectors.toList()));
+    }
+
+    // ========== Active Replays ==========
+
+    @Override
+    public Optional<Replay> getActiveReplay(String replayId) {
+        return Optional.ofNullable(Replay.ACTIVE_REPLAYS.get(replayId));
+    }
+
+    @Override
+    public Optional<Replay> getWatchingReplay(Player watcher) {
+        if (ReplayHelper.replaySessions.containsKey(watcher.getName())) {
+            Replayer replayer = ReplayHelper.replaySessions.get(watcher.getName());
+            if (replayer != null) {
+                return Optional.ofNullable(replayer.getReplay());
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isWatching(Player watcher) {
+        return ReplayHelper.replaySessions.containsKey(watcher.getName());
+    }
+
+    // ========== Static Mode ==========
+
+    @Override
+    public boolean startStaticMode() {
+        StaticModeManager manager = StaticModeManager.getInstance();
+        if (!manager.isRecording()) {
+            manager.start();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean stopStaticMode() {
+        StaticModeManager manager = StaticModeManager.getInstance();
+        if (manager.isRecording()) {
+            manager.stop();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isStaticModeActive() {
+        return StaticModeManager.getInstance().isRecording();
+    }
+
+    @Override
+    public CompletableFuture<Optional<String>> saveStaticReplay(String replayId) {
+        return CompletableFuture.supplyAsync(() -> {
+            String id = StaticModeManager.getInstance().saveLastMinutes(replayId);
+            return Optional.ofNullable(id);
+        });
+    }
+
+    @Override
+    public CompletableFuture<Optional<String>> saveStaticReplay(String replayId, int minutes) {
+        // TODO: Muss im StaticModeManager implementiert werden
+        // Fallback zur Standard-Methode
+        return saveStaticReplay(replayId);
+    }
+
+    // ========== Hooks ==========
+
+    @Override
+    public void registerHook(IReplayHook hook) {
+        hookManager.registerHook(hook);
+    }
+
+    @Override
+    public void unregisterHook(IReplayHook hook) {
+        hookManager.unregisterHook(hook);
+    }
+
+    // ========== Singleton ==========
+
+    /**
+     * Gibt die Singleton-Instanz der ReplayAPI zurück
+     *
+     * @return ReplayAPI Instanz
+     */
+    public static ReplayAPI getInstance() {
+        if (instance == null) {
+            instance = new ReplayAPI();
+        }
+        return instance;
+    }
 }

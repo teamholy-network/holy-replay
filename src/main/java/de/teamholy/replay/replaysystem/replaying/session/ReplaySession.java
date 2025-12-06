@@ -81,12 +81,9 @@ public class ReplaySession {
 		if (ConfigManager.HIDE_PLAYERS) {
 			for (Player all : Bukkit.getOnlinePlayers()) {
 				if (all == this.player) continue;
-				
 				this.player.hidePlayer(all);
 			}
 		}
-
-
 	}
 	
 	public void stopSession() {
