@@ -12,6 +12,14 @@ repositories {
     maven { url "https://repo.dmulloy2.net/repository/public/" }
     // Libby repo
     maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+
+    maven {
+        url = 'https://repo.gin1.cc/repository/releases/'
+        credentials {
+            username = System.getenv("HolyRepoUser") ?: HolyRepoUser
+            password = System.getenv("HolyRepoPassword") ?: HolyRepoPassword
+        }
+    }
 }
 
 dependencies {
@@ -19,6 +27,9 @@ dependencies {
 
     compileOnly "org.spigotmc:spigot-api:1.21.9-R0.1-SNAPSHOT"
     compileOnly 'com.comphenix.protocol:ProtocolLib:5.3.0'
+
+    compileOnly("de.teamholy:holy-core-api:$coreVersion");
+    compileOnly "de.teamholy:bukkit-core-api:${coreVersion}"
 
     // Dependency resolver at runtime
     implementation 'com.alessiodp.libby:libby-bukkit:2.0.0-SNAPSHOT'
@@ -34,8 +45,8 @@ allprojects {
     apply plugin: 'maven-publish'
 
     java {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
+        sourceCompatibility = 17
+        targetCompatibility = 17
     }
 
     compileJava {
