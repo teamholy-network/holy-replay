@@ -5,6 +5,7 @@ import de.teamholy.replay.utils.VersionUtil;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.entity.Player;
 
 
 public enum ReplayProgressType implements ReplayProgression {
@@ -23,8 +24,6 @@ public enum ReplayProgressType implements ReplayProgression {
     ACTION_BAR {
         @Override
         public void update(Replayer replayer) {
-            if (VersionUtil.isBelow(VersionUtil.VersionEnum.V1_20)) return;
-
             int currentTicks = replayer.getCurrentTicks();
             int duration = replayer.getReplay().getData().getDuration();
             String format = "%s    §e%s §7/ §e%s    §6%s";
@@ -32,7 +31,7 @@ public enum ReplayProgressType implements ReplayProgression {
             String speed = replayer.getSpeed() + "x";
 
             BaseComponent component = TextComponent.fromLegacy(String.format(format, status, formatTime(currentTicks), formatTime(duration), speed));
-            replayer.getWatchingPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, component);
+            sendActionBar(replayer.getWatchingPlayer(), component.toLegacyText());
         }
     },
     NONE {
@@ -57,6 +56,30 @@ public enum ReplayProgressType implements ReplayProgression {
 
         // Format the time in the format mm:ss
         return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    public static void sendActionBar(Player player, String message) {
+        if (VersionUtil.isCompatible(VersionUtil.VersionEnum.V1_8)) {
+            // Für 1.8 verwenden wir NMS via Reflection
+            try {
+                Object chatComponent = VersionUtil.getNmsClass("IChatBaseComponent")
+                    .getDeclaredClasses()[0]
+                    .getMethod("a", String.class)
+                    .invoke(null, "{\"text\":\"" + message + "\"}");
+
+                Object packet = VersionUtil.getNmsClass("PacketPlayOutChat")
+                    .getConstructor(VersionUtil.getNmsClass("IChatBaseComponent"), byte.class)
+                    .newInstance(chatComponent, (byte) 2);
+
+                VersionUtil.sendPacket(player, packet);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            // Für neuere Versionen verwenden wir die Spigot API
+            BaseComponent component = TextComponent.fromLegacy(message);
+            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component);
+        }
     }
 
 }

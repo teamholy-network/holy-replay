@@ -17,7 +17,6 @@ import de.teamholy.replay.replaysystem.data.ReplayData;
 import de.teamholy.replay.replaysystem.data.ReplayInfo;
 import de.teamholy.replay.replaysystem.recording.Recorder;
 import de.teamholy.replay.replaysystem.replaying.Replayer;
-import de.teamholy.replay.utils.ReplayManager;
 import de.teamholy.replay.utils.StringUtils;
 
 @Getter @Setter

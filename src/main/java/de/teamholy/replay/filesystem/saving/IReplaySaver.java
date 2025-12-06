@@ -1,6 +1,5 @@
 package de.teamholy.replay.filesystem.saving;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import de.teamholy.replay.replaysystem.Replay;

@@ -11,7 +11,6 @@ import de.teamholy.replay.listener.StaticModeListener;
 import de.teamholy.replay.replaysystem.Replay;
 import de.teamholy.replay.replaysystem.recording.RecordingMode;
 import de.teamholy.replay.replaysystem.recording.StaticModeManager;
-import de.teamholy.replay.utils.ReplayManager;
 import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -54,7 +53,6 @@ public class ReplaySystem extends JavaPlugin {
         }
 
         ConfigManager.loadConfigs();
-        ReplayManager.register();
     }
 
     private static void registerEvents() {

@@ -67,11 +67,11 @@ public class ConfigManager {
 		ItemConfig.loadConfig();
 		Messages.loadMessages();
 		
-		loadData(true);
+		loadData();
 		
 	}
 	
-	public static void loadData(boolean initial) {
+	public static void loadData() {
 		IS_REPLAY_SERVER = cfg.getBoolean("general.is_replay_server");
 		MAX_LENGTH = cfg.getInt("general.max_length");
 		SAVE_STOP = cfg.getBoolean("general.save_on_stop");
@@ -90,17 +90,5 @@ public class ConfigManager {
 		PROGRESS_TYPE = ReplayProgressType.valueOf(cfg.getString("replaying.progress_display", ReplayProgressType.getDefault().name()).toUpperCase());
 
 		ItemConfig.loadData();
-	}
-	
-	public static void reloadConfig() {
-		try {
-			cfg.load(file);
-			ItemConfig.cfg.load(ItemConfig.file);
-			Messages.loadMessages();
-		} catch (IOException | InvalidConfigurationException e) {
-			e.printStackTrace();
-		}
-
-        loadData(false);
 	}
 }
