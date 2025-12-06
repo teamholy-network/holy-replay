@@ -28,7 +28,7 @@ public class ConfigManager {
 
 	public static boolean RECORD_BLOCKS, REAL_CHANGES;
 	public static boolean RECORD_ITEMS, RECORD_ENTITIES;
-	public static boolean SAVE_STOP, USE_OFFLINE_SKINS, HIDE_PLAYERS, ADD_PLAYERS;
+	public static boolean SAVE_STOP, HIDE_PLAYERS, ADD_PLAYERS;
 
 	public static ReplayProgression PROGRESS_TYPE = ReplayProgressType.XP_BAR;
 
@@ -75,7 +75,6 @@ public class ConfigManager {
 		IS_REPLAY_SERVER = cfg.getBoolean("general.is_replay_server");
 		MAX_LENGTH = cfg.getInt("general.max_length");
 		SAVE_STOP = cfg.getBoolean("general.save_on_stop");
-		USE_OFFLINE_SKINS = cfg.getBoolean("general.use_offline_skins");
 		QUALITY = ReplayQuality.valueOf(cfg.getString("general.quality", "high").toUpperCase());
 		HIDE_PLAYERS = cfg.getBoolean("general.hide_players");
 		ADD_PLAYERS = cfg.getBoolean("general.add_new_players");

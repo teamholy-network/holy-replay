@@ -1,8 +1,6 @@
 package de.teamholy.replay.replaysystem.recording;
 
-import com.comphenix.protocol.wrappers.WrappedGameProfile;
-import com.comphenix.protocol.wrappers.WrappedSignedProperty;
-import com.google.common.collect.Multimap;
+import de.teamholy.core.bukkit.BukkitCore;
 import de.teamholy.replay.ReplaySystem;
 import de.teamholy.replay.api.IReplayHook;
 import de.teamholy.replay.api.ReplayAPI;
@@ -14,14 +12,8 @@ import de.teamholy.replay.replaysystem.data.ReplayData;
 import de.teamholy.replay.replaysystem.data.ReplayInfo;
 import de.teamholy.replay.replaysystem.data.types.*;
 import de.teamholy.replay.replaysystem.utils.NPCManager;
-import de.teamholy.replay.utils.ReplayManager;
-import de.teamholy.replay.utils.fetcher.JsonData;
-import de.teamholy.replay.utils.fetcher.PlayerInfo;
-import de.teamholy.replay.utils.fetcher.SkinInfo;
-import de.teamholy.replay.utils.fetcher.WebsiteFetcher;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -169,43 +161,16 @@ public class Recorder {
     public void createSpawnAction(Player player, Location loc, boolean first) {
         SignatureData[] signArr = new SignatureData[1];
 
-        if (!Bukkit.getOnlineMode() && ConfigManager.USE_OFFLINE_SKINS) {
-            new BukkitRunnable() {
+        BukkitCore.getAPI().getSkinService().getEntityAsync(player.getUniqueId(), () -> BukkitCore.getAPI().getSkinService().getRepository().findFirstById(player.getUniqueId()), skinProfile -> {
+            signArr[0] = new SignatureData(player.getName(), skinProfile.getValue(), skinProfile.getSignature());
 
-                @Override
-                public void run() {
-                    PlayerInfo info = (PlayerInfo) WebsiteFetcher.getJson("https://api.mojang.com/users/profiles/minecraft/" + player.getName(), true, new JsonData(true, new PlayerInfo()));
-
-                    if (info != null) {
-                        SkinInfo skin = (SkinInfo) WebsiteFetcher.getJson("https://sessionserver.mojang.com/session/minecraft/profile/" + info.getId() + "?unsigned=false", true, new JsonData(true, new SkinInfo()));
-
-                        Map<String, String> props = skin.getProperties().get(0);
-                        signArr[0] = new SignatureData(props.get("name"), props.get("value"), props.get("signature"));
-                    }
-
-                    ActionData spawnData = new ActionData(0, ActionType.SPAWN, player.getName(), new SpawnData(player.getUniqueId(), LocationData.fromLocation(loc), signArr[0]));
-                    addData(first ? 0 : currentTick, spawnData);
-
-                    ActionData invData = new ActionData(0, ActionType.PACKET, player.getName(), NPCManager.copyFromPlayer(player, true, true));
-                    addData(first ? 0 : currentTick, invData);
-                }
-            }.runTaskAsynchronously(ReplaySystem.getInstance());
-        }
-
-        Multimap<String, WrappedSignedProperty> map = WrappedGameProfile.fromPlayer(player).getProperties();
-        for (String prop : map.asMap().keySet()) {
-            for (WrappedSignedProperty sp : map.get(prop)) {
-                signArr[0] = new SignatureData(sp.getName(), sp.getValue(), sp.getSignature());
-            }
-        }
-
-        if (!ConfigManager.USE_OFFLINE_SKINS || Bukkit.getOnlineMode()) {
             ActionData spawnData = new ActionData(0, ActionType.SPAWN, player.getName(), new SpawnData(player.getUniqueId(), LocationData.fromLocation(loc), signArr[0]));
-            addData(currentTick, spawnData);
+            addData(first ? 0 : currentTick, spawnData);
 
-            ActionData invData = new ActionData(currentTick, ActionType.PACKET, player.getName(), NPCManager.copyFromPlayer(player, true, true));
-            addData(currentTick, invData);
-        }
+            ActionData invData = new ActionData(0, ActionType.PACKET, player.getName(), NPCManager.copyFromPlayer(player, true, true));
+            addData(first ? 0 : currentTick, invData);
+        });
+
     }
 
     public List<String> getPlayers() {
