@@ -7,6 +7,8 @@ import de.teamholy.replay.database.DatabaseService;
 import de.teamholy.replay.filesystem.ConfigManager;
 import de.teamholy.replay.filesystem.saving.ReplaySaver;
 import de.teamholy.replay.replaysystem.Replay;
+import de.teamholy.replay.replaysystem.recording.RecordingMode;
+import de.teamholy.replay.replaysystem.recording.StaticModeManager;
 import de.teamholy.replay.utils.ReplayManager;
 import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,6 +27,10 @@ public class ReplaySystem extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (ConfigManager.RECORDING_MODE == RecordingMode.STATIC) {
+            StaticModeManager.getInstance().stop();
+        }
+
         for (Replay replay : new HashMap<>(ReplayManager.activeReplays).values()) {
             if (replay.isRecording() && !replay.getRecorder().getData().getActions().isEmpty()) {
                 replay.getRecorder().stop(ConfigManager.SAVE_STOP);

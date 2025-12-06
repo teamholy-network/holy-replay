@@ -1,12 +1,9 @@
 package de.teamholy.replay.api;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import de.teamholy.replay.replaysystem.recording.StaticModeManager;
 import de.teamholy.replay.replaysystem.replaying.Replayer;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import de.teamholy.replay.filesystem.saving.IReplaySaver;
@@ -95,7 +92,34 @@ public class ReplayAPI {
 		return hookManager;
 	}
 	
-	
+	// ========== Static Mode Methods ==========
+
+	/**
+	 * Saves the last configured minutes from static mode continuous recording
+	 * @param customId Custom ID for the replay, or null for auto-generated ID
+	 * @return The ID of the saved replay, or null if static mode is not running
+	 */
+	public String saveStaticReplay(String customId) {
+		return StaticModeManager.getInstance().saveLastMinutes(customId);
+	}
+
+	/**
+	 * Checks if static mode is currently recording
+	 * @return true if static mode is active and recording
+	 */
+	public boolean isStaticModeRecording() {
+		return StaticModeManager.getInstance().isRecording();
+	}
+
+	/**
+	 * Gets the current duration of static mode recording in seconds
+	 * @return Duration in seconds, or 0 if not recording
+	 */
+	public int getStaticModeDuration() {
+		return StaticModeManager.getInstance().getCurrentDuration();
+	}
+
+
 	public static ReplayAPI getInstance() {
 		if (instance == null) instance = new ReplayAPI();
 		

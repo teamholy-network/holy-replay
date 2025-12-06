@@ -4,6 +4,7 @@ import java.io.File;
 
 import java.io.IOException;
 
+import de.teamholy.replay.replaysystem.recording.RecordingMode;
 import de.teamholy.replay.replaysystem.replaying.session.ReplayProgressType;
 import de.teamholy.replay.replaysystem.replaying.session.ReplayProgression;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -22,9 +23,12 @@ public class ConfigManager {
 
 	public static int MAX_LENGTH, CLEANUP_REPLAYS;
 
+	public static RecordingMode RECORDING_MODE;
+	public static int STATIC_MODE_DURATION;
+
 	public static boolean RECORD_BLOCKS, REAL_CHANGES;
 	public static boolean RECORD_ITEMS, RECORD_ENTITIES;
-	public static boolean SAVE_STOP, RECORD_STARTUP, USE_OFFLINE_SKINS, HIDE_PLAYERS, UPDATE_NOTIFY, ADD_PLAYERS;
+	public static boolean SAVE_STOP, USE_OFFLINE_SKINS, HIDE_PLAYERS, UPDATE_NOTIFY, ADD_PLAYERS;
 
 	public static ReplayProgression PROGRESS_TYPE = ReplayProgressType.XP_BAR;
 
@@ -36,13 +40,15 @@ public class ConfigManager {
 		if (!file.exists()) {
 			cfg.set("general.is_replay_server", false);
 			cfg.set("general.max_length", 3600);
-			cfg.set("general.record_on_startup", false);
 			cfg.set("general.save_on_stop", false);
 			cfg.set("general.use_offline_skins", false);
 			cfg.set("general.quality", "high");
 			cfg.set("general.hide_players", false);
 			cfg.set("general.add_new_players", true);
 			cfg.set("general.update_notifications", true);
+
+			cfg.set("recording.mode", "API");
+			cfg.set("recording.static_mode_duration", 300);
 
 			cfg.set("replaying.world.reset_changes", false);
 			cfg.set("replaying.progress_display", ReplayProgressType.getDefault().name().toLowerCase());
@@ -71,12 +77,15 @@ public class ConfigManager {
 		IS_REPLAY_SERVER = cfg.getBoolean("general.is_replay_server");
 		MAX_LENGTH = cfg.getInt("general.max_length");
 		SAVE_STOP = cfg.getBoolean("general.save_on_stop");
-		RECORD_STARTUP = cfg.getBoolean("general.record_on_startup", false);
 		USE_OFFLINE_SKINS = cfg.getBoolean("general.use_offline_skins");
 		QUALITY = ReplayQuality.valueOf(cfg.getString("general.quality", "high").toUpperCase());
 		HIDE_PLAYERS = cfg.getBoolean("general.hide_players");
 		ADD_PLAYERS = cfg.getBoolean("general.add_new_players");
 		UPDATE_NOTIFY = cfg.getBoolean("general.update_notifications");
+
+		RECORDING_MODE = RecordingMode.valueOf(cfg.getString("recording.mode", "API").toUpperCase());
+		STATIC_MODE_DURATION = cfg.getInt("recording.static_mode_duration", 300);
+
 		RECORD_BLOCKS = cfg.getBoolean("recording.blocks.enabled");
 		REAL_CHANGES = cfg.getBoolean("recording.blocks.real_changes");
 		RECORD_ITEMS = cfg.getBoolean("recording.entities.items.enabled");

@@ -4,7 +4,10 @@ import de.teamholy.replay.ReplaySystem;
 import de.teamholy.replay.api.ReplayAPI;
 import de.teamholy.replay.filesystem.ConfigManager;
 import de.teamholy.replay.listener.ReplayListener;
+import de.teamholy.replay.listener.StaticModeListener;
 import de.teamholy.replay.replaysystem.Replay;
+import de.teamholy.replay.replaysystem.recording.RecordingMode;
+import de.teamholy.replay.replaysystem.recording.StaticModeManager;
 import org.bukkit.Bukkit;
 
 import java.util.HashMap;
@@ -16,7 +19,11 @@ public class ReplayManager {
     public static void register() {
         registerEvents();
 
-        if (ConfigManager.RECORD_STARTUP) {
+        if (ConfigManager.RECORDING_MODE == RecordingMode.STATIC) {
+            // Start static mode continuous recording
+            StaticModeManager.getInstance().start();
+        } else if (ConfigManager.RECORD_STARTUP) {
+            // API mode with startup recording
             ReplayAPI.getInstance().recordReplay(null);
         }
 
@@ -25,6 +32,7 @@ public class ReplayManager {
 
     private static void registerEvents() {
         new ReplayListener().register();
+        new StaticModeListener().register();
     }
 
     private static void delayedInit() {

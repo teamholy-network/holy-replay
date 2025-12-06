@@ -114,7 +114,21 @@ public class Recorder {
 
                 Recorder.this.currentTick++;
 
-                if ((Recorder.this.currentTick / 20) >= ConfigManager.MAX_LENGTH) stop(ConfigManager.SAVE_STOP);
+                // In static mode, implement rolling buffer by removing old data
+                if (replay.getId().equals(StaticModeManager.CONTINUOUS_REPLAY_ID)) {
+                    int bufferDuration = ConfigManager.STATIC_MODE_DURATION * 20;
+                    int cutoffTick = Recorder.this.currentTick - bufferDuration;
+
+                    // Remove data older than buffer window
+                    if (cutoffTick > 0) {
+                        data.getActions().keySet().removeIf(tick -> tick < cutoffTick);
+                    }
+                } else {
+                    // Normal recording mode - stop at max length
+                    if ((Recorder.this.currentTick / 20) >= ConfigManager.MAX_LENGTH) {
+                        stop(ConfigManager.SAVE_STOP);
+                    }
+                }
             }
         };
 
