@@ -13,7 +13,6 @@ import me.jumper251.replay.replaysystem.replaying.Replayer;
 import me.jumper251.replay.replaysystem.utils.entities.INPC;
 import me.jumper251.replay.utils.VersionUtil;
 import me.jumper251.replay.utils.version.MaterialBridge;
-import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -35,15 +34,16 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 
+@SuppressWarnings("all")
 public class ReplayListener extends AbstractListener {
 
   @SuppressWarnings("deprecation")
   @EventHandler(priority = EventPriority.MONITOR)
-  public void onInteract(PlayerInteractEvent e) {
-    if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
-      var player = e.getPlayer();
+  public void onInteract(PlayerInteractEvent event) {
+    if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+      var player = event.getPlayer();
       if (ReplayHelper.replaySessions.containsKey(player.getName())) {
-        e.setCancelled(true);
+        event.setCancelled(true);
 
         Replayer replayer = ReplayHelper.replaySessions.get(player.getName());
         if (player.getItemInHand() == null) {
@@ -125,33 +125,33 @@ public class ReplayListener extends AbstractListener {
 
   @SuppressWarnings("deprecation")
   @EventHandler
-  public void onClick(InventoryClickEvent e) {
-    if (e.getWhoClicked() instanceof Player player) {
+  public void onClick(InventoryClickEvent event) {
+    if (event.getWhoClicked() instanceof Player player) {
       if (ReplayHelper.replaySessions.containsKey(player.getName())) {
-        e.setCancelled(true);
+        event.setCancelled(true);
 
         // Avoid IncompatibleClassChangeError < 1.21
-        String title = VersionUtil.isAbove(VersionUtil.VersionEnum.V1_21) ? e.getView().getTitle()
-            : LegacyUtils.getInventoryTitle(e);
+        String title = VersionUtil.isAbove(VersionUtil.VersionEnum.V1_21) ? event.getView().getTitle()
+            : LegacyUtils.getInventoryTitle(event);
 
         if (title.equalsIgnoreCase("§7Teleporter")) {
           Replayer replayer = ReplayHelper.replaySessions.get(player.getName());
 
-          if (e.getCurrentItem() != null && e.getCurrentItem().getItemMeta() != null) {
-            e.getCurrentItem().getItemMeta().getDisplayName();
-            if (e.getCurrentItem().getType() == MaterialBridge.PLAYER_HEAD.toMaterial()) {
-              String owner = e.getCurrentItem().getItemMeta().getDisplayName()
+          if (event.getCurrentItem() != null && event.getCurrentItem().getItemMeta() != null) {
+            event.getCurrentItem().getItemMeta().getDisplayName();
+            if (event.getCurrentItem().getType() == MaterialBridge.PLAYER_HEAD.toMaterial()) {
+              String owner = event.getCurrentItem().getItemMeta().getDisplayName()
                   .replaceAll("§6", "");
               if (replayer.getNPCList().containsKey(owner)) {
                 INPC npc = replayer.getNPCList().get(owner);
                 player.teleport(npc.getLocation());
               }
-            } else if (e.getCurrentItem().getType() == Material.ARROW) {
-              if (e.getSlot() == e.getInventory().getSize() - 1) {
-                int nextPage = e.getCurrentItem().getAmount();
+            } else if (event.getCurrentItem().getType() == Material.ARROW) {
+              if (event.getSlot() == event.getInventory().getSize() - 1) {
+                int nextPage = event.getCurrentItem().getAmount();
                 ReplayHelper.createTeleporter(player, replayer, nextPage);
-              } else if (e.getSlot() == e.getInventory().getSize() - 9) {
-                int previousPage = e.getCurrentItem().getAmount();
+              } else if (event.getSlot() == event.getInventory().getSize() - 9) {
+                int previousPage = event.getCurrentItem().getAmount();
                 ReplayHelper.createTeleporter(player, replayer, previousPage);
               }
             }
@@ -165,26 +165,26 @@ public class ReplayListener extends AbstractListener {
 
 
   @EventHandler
-  public void onFood(FoodLevelChangeEvent e) {
-    var p = (Player) e.getEntity();
-    if (ReplayHelper.replaySessions.containsKey(p.getName())) {
-      e.setFoodLevel(20);
-      e.setCancelled(true);
+  public void onFood(FoodLevelChangeEvent event) {
+    var player = (Player) event.getEntity();
+    if (ReplayHelper.replaySessions.containsKey(player.getName())) {
+      event.setFoodLevel(20);
+      event.setCancelled(true);
     }
   }
 
   @EventHandler
-  public void onDamage(EntityDamageEvent e) {
-    if (e.getEntity() instanceof Player player) {
+  public void onDamage(EntityDamageEvent event) {
+    if (event.getEntity() instanceof Player player) {
       if (ReplayHelper.replaySessions.containsKey(player.getName())) {
-        e.setCancelled(true);
+        event.setCancelled(true);
       }
     }
   }
 
   @EventHandler
-  public void onTeleport(PlayerTeleportEvent e) {
-    var player = e.getPlayer();
+  public void onTeleport(PlayerTeleportEvent event) {
+    var player = event.getPlayer();
     if (ReplayHelper.replaySessions.containsKey(player.getName())) {
       Replayer replayer = ReplayHelper.replaySessions.get(player.getName());
 
@@ -196,60 +196,60 @@ public class ReplayListener extends AbstractListener {
   }
 
   @EventHandler
-  public void onQuit(PlayerQuitEvent e) {
-    Player p = e.getPlayer();
-    if (ReplayHelper.replaySessions.containsKey(p.getName())) {
-      Replayer replayer = ReplayHelper.replaySessions.get(p.getName());
+  public void onQuit(PlayerQuitEvent event) {
+    Player player = event.getPlayer();
+    if (ReplayHelper.replaySessions.containsKey(player.getName())) {
+      Replayer replayer = ReplayHelper.replaySessions.get(player.getName());
       replayer.stop();
       replayer.getSession().resetPlayer();
     }
   }
 
   @EventHandler
-  public void onPickup(PlayerPickupItemEvent e) {
-    Player p = e.getPlayer();
-    if (ReplayHelper.replaySessions.containsKey(p.getName())) {
-      e.setCancelled(true);
+  public void onPickup(PlayerPickupItemEvent event) {
+    Player player = event.getPlayer();
+    if (ReplayHelper.replaySessions.containsKey(player.getName())) {
+      event.setCancelled(true);
     }
 
     boolean isReplayItem = ReplayHelper.replaySessions.values()
         .stream()
-        .anyMatch(replayer -> replayer.getUtils().getEntities().containsValue(e.getItem()));
+        .anyMatch(replayer -> replayer.getUtils().getEntities().containsValue(event.getItem()));
 
     if (isReplayItem) {
-      e.setCancelled(true);
+      event.setCancelled(true);
     }
 
   }
 
   @EventHandler
-  public void onDrop(PlayerDropItemEvent e) {
-    Player p = e.getPlayer();
-    if (ReplayHelper.replaySessions.containsKey(p.getName())) {
-      e.setCancelled(true);
+  public void onDrop(PlayerDropItemEvent event) {
+    Player player = event.getPlayer();
+    if (ReplayHelper.replaySessions.containsKey(player.getName())) {
+      event.setCancelled(true);
     }
 
   }
 
   @EventHandler
-  public void onMove(PlayerMoveEvent e) {
-    Player p = e.getPlayer();
-    if (ReplayHelper.replaySessions.containsKey(p.getName())) {
-      var oldChunk = e.getFrom().getChunk();
-      var newChunk = e.getTo().getChunk();
+  public void onMove(PlayerMoveEvent event) {
+    Player player = event.getPlayer();
+    if (ReplayHelper.replaySessions.containsKey(player.getName())) {
+      var oldChunk = event.getFrom().getChunk();
+      var newChunk = event.getTo().getChunk();
 
       if (oldChunk.getWorld() != newChunk.getWorld() || oldChunk.getX() != newChunk.getX()
           || oldChunk.getZ() != newChunk.getZ()) {
-        Replayer replayer = ReplayHelper.replaySessions.get(p.getName());
+        Replayer replayer = ReplayHelper.replaySessions.get(player.getName());
 
         for (INPC npc : replayer.getNPCList().values()) {
 
-          if (ReplayHelper.isInRange(npc.getLocation(), p.getLocation())) {
-            if (!Arrays.asList(npc.getVisible()).contains(p)) {
-              npc.respawn(p);
+          if (ReplayHelper.isInRange(npc.getLocation(), player.getLocation())) {
+            if (!Arrays.asList(npc.getVisible()).contains(player)) {
+              npc.respawn(player);
             }
           } else {
-            if (Arrays.asList(npc.getVisible()).contains(p)) {
+            if (Arrays.asList(npc.getVisible()).contains(player)) {
               npc.despawn();
             }
           }
@@ -263,9 +263,9 @@ public class ReplayListener extends AbstractListener {
 
   @EventHandler
   public void onWorldChange(PlayerChangedWorldEvent e) {
-    Player p = e.getPlayer();
-    if (ReplayHelper.replaySessions.containsKey(p.getName())) {
-      final Replayer replayer = ReplayHelper.replaySessions.get(p.getName());
+    Player player = e.getPlayer();
+    if (ReplayHelper.replaySessions.containsKey(player.getName())) {
+      final Replayer replayer = ReplayHelper.replaySessions.get(player.getName());
 
       new BukkitRunnable() {
 
@@ -275,8 +275,8 @@ public class ReplayListener extends AbstractListener {
 
             npc.despawn();
 
-            if (ReplayHelper.isInRange(p.getLocation(), npc.getLocation())) {
-              npc.respawn(p);
+            if (ReplayHelper.isInRange(player.getLocation(), npc.getLocation())) {
+              npc.respawn(player);
             }
           }
 
@@ -287,15 +287,15 @@ public class ReplayListener extends AbstractListener {
 
   @EventHandler
   public void onSneak(PlayerToggleSneakEvent e) {
-    Player p = e.getPlayer();
-    if (ReplayHelper.replaySessions.containsKey(p.getName())) {
-      ReplayPacketListener packetListener = ReplayHelper.replaySessions.get(p.getName())
+    var player = e.getPlayer();
+    if (ReplayHelper.replaySessions.containsKey(player.getName())) {
+      ReplayPacketListener packetListener = ReplayHelper.replaySessions.get(player.getName())
           .getSession().getPacketListener();
 
       if (packetListener.getPrevious() != -1) {
-        packetListener.setCamera(p, p.getEntityId(), packetListener.getPrevious());
+        packetListener.setCamera(player, player.getEntityId(), packetListener.getPrevious());
 
-        p.setAllowFlight(true);
+        player.setAllowFlight(true);
       }
     }
 
@@ -304,8 +304,8 @@ public class ReplayListener extends AbstractListener {
 
   @EventHandler
   public void onDeath(PlayerDeathEvent e) {
-    Player p = e.getEntity();
-    if (ReplayHelper.replaySessions.containsKey(p.getName())) {
+    var player = e.getEntity();
+    if (ReplayHelper.replaySessions.containsKey(player.getName())) {
       e.setKeepLevel(true);
       e.setKeepInventory(true);
     }

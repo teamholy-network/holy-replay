@@ -15,7 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import me.jumper251.replay.ReplaySystem;
-import me.jumper251.replay.api.ReplaySessionFinishEvent;
+import me.jumper251.replay.api.events.ReplaySessionFinishEvent;
 import me.jumper251.replay.filesystem.ConfigManager;
 import me.jumper251.replay.filesystem.ItemConfig;
 import me.jumper251.replay.filesystem.ItemConfigOption;
