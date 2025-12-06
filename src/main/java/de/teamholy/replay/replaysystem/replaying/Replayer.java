@@ -17,12 +17,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 
 import de.teamholy.replay.ReplaySystem;
-import de.teamholy.replay.api.IReplayHook;
-import de.teamholy.replay.api.ReplayAPI;
 import de.teamholy.replay.filesystem.ConfigManager;
 import de.teamholy.replay.replaysystem.Replay;
 import de.teamholy.replay.replaysystem.data.ActionData;
-import de.teamholy.replay.replaysystem.data.ActionType;
 import de.teamholy.replay.replaysystem.data.ReplayData;
 import de.teamholy.replay.replaysystem.data.types.ItemData;
 import de.teamholy.replay.replaysystem.data.types.LocationData;
