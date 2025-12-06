@@ -31,14 +31,11 @@ dependencies {
 
     compileOnly("de.teamholy:holy-core-api:$coreVersion");
     compileOnly "de.teamholy:bukkit-core-api:$coreVersion"
-
-    // Dependency resolver at runtime
-    implementation 'com.alessiodp.libby:libby-bukkit:2.0.0-SNAPSHOT'
 }
 
 allprojects {
     group = 'de.teamholy.replay'
-    version = '1.8.16'
+    version = '0.0.1-SNAPSHOT'
 
     apply plugin: 'java'
     apply plugin: 'maven-publish'
@@ -65,9 +62,8 @@ allprojects {
 }
 
 shadowJar {
-    archiveFileName = 'Replay.jar'
+    archiveFileName = "holy-replay-${version}.jar"
 
-    relocate 'com.alessiodp.libby', 'de.teamholy.replay.libs.com.alessiodp.libby'
     relocate 'com.comphenix.packetwrapper', 'de.teamholy.replay.libs.com.comphenix.packetwrapper'
 }
 

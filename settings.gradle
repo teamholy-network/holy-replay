@@ -4,6 +4,6 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'AdvancedReplay'
+rootProject.name = 'holy-replay'
 include 'legacy'
 

@@ -1,6 +1,5 @@
 package de.teamholy.replay;
 
-import com.alessiodp.libby.BukkitLibraryManager;
 import java.util.HashMap;
 import de.teamholy.replay.database.DatabaseRegistry;
 import de.teamholy.replay.filesystem.ConfigManager;
@@ -35,9 +34,6 @@ public class ReplaySystem extends JavaPlugin {
     instance = this;
 
     var start = System.currentTimeMillis();
-
-    BukkitLibraryManager libraryManager = new BukkitLibraryManager(this);
-    libraryManager.addMavenCentral();
 
     getLogger().info(
         "Loading Replay v" + getDescription().getVersion() + " by " + getDescription().getAuthors()
