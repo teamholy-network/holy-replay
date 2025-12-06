@@ -39,13 +39,11 @@ public class Recorder {
     private int currentTick;
     private PacketRecorder packetRecorder;
 
-    private CommandSender sender;
 
-    public Recorder(Replay replay, List<Player> players, CommandSender sender) {
+    public Recorder(Replay replay, List<Player> players) {
         this.players = new ArrayList<>();
         this.data = new ReplayData();
         this.replay = replay;
-        this.sender = sender;
 
         HashMap<String, PlayerWatcher> tmpWatchers = new HashMap<>();
         for (Player player : players) {
@@ -92,8 +90,6 @@ public class Recorder {
 
                         ActionData actionData = new ActionData(currentTick, ActionType.PACKET, name, packetData);
                         addData(currentTick, actionData);
-
-
                     }
 
                 }

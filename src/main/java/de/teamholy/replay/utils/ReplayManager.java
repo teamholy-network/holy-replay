@@ -2,7 +2,6 @@ package de.teamholy.replay.utils;
 
 import de.teamholy.replay.ReplaySystem;
 import de.teamholy.replay.api.ReplayAPI;
-import de.teamholy.replay.commands.replay.ReplayCommand;
 import de.teamholy.replay.filesystem.ConfigManager;
 import de.teamholy.replay.listener.ReplayListener;
 import de.teamholy.replay.replaysystem.Replay;
@@ -16,10 +15,9 @@ public class ReplayManager {
 
     public static void register() {
         registerEvents();
-        registerCommands();
 
         if (ConfigManager.RECORD_STARTUP) {
-            ReplayAPI.getInstance().recordReplay(null, Bukkit.getConsoleSender());
+            ReplayAPI.getInstance().recordReplay(null);
         }
 
         Bukkit.getScheduler().runTaskAsynchronously(ReplaySystem.getInstance(), ReplayManager::delayedInit);
@@ -27,10 +25,6 @@ public class ReplayManager {
 
     private static void registerEvents() {
         new ReplayListener().register();
-    }
-
-    private static void registerCommands() {
-        ReplaySystem.getInstance().getCommand("replay").setExecutor(new ReplayCommand());
     }
 
     private static void delayedInit() {

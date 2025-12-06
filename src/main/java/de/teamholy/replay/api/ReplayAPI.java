@@ -33,33 +33,16 @@ public class ReplayAPI {
 		this.hookManager.unregisterHook(hook);
 	}
 	
-	
-	public Replay recordReplay(String name, CommandSender sender, Player... players) {
-		List<Player> toRecord;
-		
-		if (players != null && players.length > 0) { 
-			toRecord = Arrays.asList(players);
-		} else {
-            toRecord = new ArrayList<>(Bukkit.getOnlinePlayers());
-		}
-		
-		return recordReplay(name, sender, toRecord);
-	}
-	
-	public Replay recordReplay(String name, CommandSender sender, List<Player> players) {
+	public Replay recordReplay(String name, List<Player> players) {
 		Replay replay = new Replay();
 		if (name != null) replay.setId(name);
-		replay.recordAll(players, sender);
+		replay.recordAll(players);
 		
 		return replay;
 	}
 
-	public Replay recordReplay(String name, List<Player> players) {
-		return recordReplay(name, null, players);
-	}
-
 	public Replay recordReplay(String name, Player... players) {
-		return recordReplay(name, null, players);
+		return recordReplay(name, players);
 	}
 	
 	public void stopReplay(String name, boolean save) {

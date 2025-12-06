@@ -46,11 +46,11 @@ public class Replay {
 	}
 	
 	public void record(CommandSender sender, Player... players) {
-		recordAll(Arrays.asList(players), sender);
+		recordAll(Arrays.asList(players));
 	}
 	
-	public void recordAll(List<Player> players, CommandSender sender) {
-		this.recorder = new Recorder(this, players, sender);
+	public void recordAll(List<Player> players) {
+		this.recorder = new Recorder(this, players);
 		this.recorder.start();
 		this.isRecording = true;
 		
@@ -63,7 +63,6 @@ public class Replay {
 		} else {
 			startReplay(watcher);
 		}
-		
 	}
 		
 	private void startReplay(Player watcher) {

@@ -1,11 +1,5 @@
 package de.teamholy.replay.listener;
 
-
-
-
-
-
-
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
