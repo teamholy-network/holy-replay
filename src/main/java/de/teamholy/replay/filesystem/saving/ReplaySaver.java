@@ -16,6 +16,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 // TODO: Use NIO for better performance and implement en2do to upload the repalys into the mongo database
 public class ReplaySaver implements IReplaySaver {
@@ -79,9 +80,8 @@ public class ReplaySaver implements IReplaySaver {
     }
 
     @Override
-    public boolean replayExists(String replayName) {
-        if (replayCache != null && replayCache.containsKey(replayName)) return true;
-        return false;
+    public CompletableFuture<Boolean> replayExists(String replayName) {
+        return databaseService.exists(replayName);
     }
 
     @Override

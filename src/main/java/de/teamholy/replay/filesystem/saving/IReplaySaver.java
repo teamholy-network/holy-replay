@@ -1,6 +1,7 @@
 package de.teamholy.replay.filesystem.saving;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import de.teamholy.replay.replaysystem.Replay;
 import de.teamholy.replay.utils.fetcher.Consumer;
@@ -11,7 +12,7 @@ public interface IReplaySaver {
 	
 	void loadReplay(String replayName, Consumer<Replay> consumer);
 	
-	boolean replayExists(String replayName);
+	CompletableFuture<Boolean> replayExists(String replayName);
 	
 	void deleteReplay(String replayName);
 	
