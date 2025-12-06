@@ -2,6 +2,7 @@ package de.teamholy.replay.replaysystem;
 
 import java.util.Arrays;
 
+import java.util.HashMap;
 import java.util.List;
 
 import lombok.Getter;
@@ -21,6 +22,8 @@ import de.teamholy.replay.utils.StringUtils;
 
 @Getter @Setter
 public class Replay {
+
+	public static HashMap<String, Replay> ACTIVE_REPLAYS = new HashMap<>();
 
 	private String id;
 	
@@ -53,8 +56,8 @@ public class Replay {
 		this.recorder = new Recorder(this, players);
 		this.recorder.start();
 		this.isRecording = true;
-		
-		ReplayManager.activeReplays.put(this.id, this);
+
+		Replay.ACTIVE_REPLAYS.put(this.id, this);
 	}
 	
 	public void play(Player watcher) {

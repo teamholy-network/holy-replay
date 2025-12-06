@@ -163,9 +163,7 @@ public class Recorder {
         this.replay.setRecording(false);
 
 
-        if (ReplayManager.activeReplays.containsKey(this.replay.getId())) {
-            ReplayManager.activeReplays.remove(this.replay.getId());
-        }
+        Replay.ACTIVE_REPLAYS.remove(this.replay.getId());
     }
 
     public void createSpawnAction(Player player, Location loc, boolean first) {

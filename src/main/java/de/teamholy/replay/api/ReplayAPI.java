@@ -47,8 +47,8 @@ public class ReplayAPI {
 	}
 	
 	public void stopReplay(String name, boolean save, boolean ignoreEmpty) {
-		if (ReplayManager.activeReplays.containsKey(name)) {
-			Replay replay = ReplayManager.activeReplays.get(name);
+		if (Replay.ACTIVE_REPLAYS.containsKey(name)) {
+			Replay replay = Replay.ACTIVE_REPLAYS.get(name);
 			
 			boolean shouldSave = save && (replay.getRecorder().getData().getActions().size() > 0 || !ignoreEmpty);
 			if (replay.isRecording()) replay.getRecorder().stop(shouldSave);

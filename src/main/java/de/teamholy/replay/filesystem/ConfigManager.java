@@ -21,14 +21,14 @@ public class ConfigManager {
 
 	public static boolean IS_REPLAY_SERVER;
 
-	public static int MAX_LENGTH, CLEANUP_REPLAYS;
+	public static int MAX_LENGTH;
 
 	public static RecordingMode RECORDING_MODE;
 	public static int STATIC_MODE_DURATION;
 
 	public static boolean RECORD_BLOCKS, REAL_CHANGES;
 	public static boolean RECORD_ITEMS, RECORD_ENTITIES;
-	public static boolean SAVE_STOP, USE_OFFLINE_SKINS, HIDE_PLAYERS, UPDATE_NOTIFY, ADD_PLAYERS;
+	public static boolean SAVE_STOP, USE_OFFLINE_SKINS, HIDE_PLAYERS, ADD_PLAYERS;
 
 	public static ReplayProgression PROGRESS_TYPE = ReplayProgressType.XP_BAR;
 
@@ -45,12 +45,10 @@ public class ConfigManager {
 			cfg.set("general.quality", "high");
 			cfg.set("general.hide_players", false);
 			cfg.set("general.add_new_players", true);
-			cfg.set("general.update_notifications", true);
 
 			cfg.set("recording.mode", "API");
 			cfg.set("recording.static_mode_duration", 300);
 
-			cfg.set("replaying.world.reset_changes", false);
 			cfg.set("replaying.progress_display", ReplayProgressType.getDefault().name().toLowerCase());
 
 			cfg.set("recording.blocks.enabled", true);
@@ -81,7 +79,6 @@ public class ConfigManager {
 		QUALITY = ReplayQuality.valueOf(cfg.getString("general.quality", "high").toUpperCase());
 		HIDE_PLAYERS = cfg.getBoolean("general.hide_players");
 		ADD_PLAYERS = cfg.getBoolean("general.add_new_players");
-		UPDATE_NOTIFY = cfg.getBoolean("general.update_notifications");
 
 		RECORDING_MODE = RecordingMode.valueOf(cfg.getString("recording.mode", "API").toUpperCase());
 		STATIC_MODE_DURATION = cfg.getInt("recording.static_mode_duration", 300);

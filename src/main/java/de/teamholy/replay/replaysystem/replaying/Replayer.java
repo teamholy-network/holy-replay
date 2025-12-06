@@ -198,8 +198,8 @@ public class Replayer {
 		this.npcs.clear();
 		
 		this.replay.setPlaying(false);
-		
-		if (ConfigManager.WORLD_RESET) this.utils.resetChanges(this.blockChanges);
+
+		this.utils.resetChanges(this.blockChanges);
 
 		this.session.stopSession();
 	}
