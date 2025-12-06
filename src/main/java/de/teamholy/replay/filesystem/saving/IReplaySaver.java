@@ -15,5 +15,4 @@ public interface IReplaySaver {
 	
 	void deleteReplay(String replayName);
 	
-	List<String> getReplays();
 }

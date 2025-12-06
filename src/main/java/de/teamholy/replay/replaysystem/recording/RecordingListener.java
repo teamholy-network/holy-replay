@@ -427,9 +427,9 @@ public class RecordingListener extends AbstractListener {
 		Player p = e.getPlayer();
 		if (this.recorder.getPlayers().contains(p.getName())) {
 			LocationData location = LocationData.fromLocation(p.getLocation());
-			
-			
+
 			this.packetRecorder.addData(p.getName(), new WorldChangeData(location));
+			this.packetRecorder.getRecorder().getData().getWorlds().add(e.getPlayer().getWorld().getName());
 		}
 		
 	}

@@ -2,9 +2,7 @@ package de.teamholy.replay.filesystem;
 
 import java.io.File;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
 
 import de.teamholy.replay.replaysystem.replaying.session.ReplayProgressType;
 import de.teamholy.replay.replaysystem.replaying.session.ReplayProgression;
@@ -13,43 +11,37 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import de.teamholy.replay.ReplaySystem;
-import de.teamholy.replay.database.DatabaseRegistry;
-import de.teamholy.replay.database.MySQLDatabase;
 import de.teamholy.replay.replaysystem.recording.optimization.ReplayQuality;
-import de.teamholy.replay.utils.LogUtils;
 
 public class ConfigManager {
 
 	public static File file = new File(ReplaySystem.getInstance().getDataFolder(), "config.yml");
 	public static FileConfiguration cfg = YamlConfiguration.loadConfiguration(file);
-	
+
+	public static boolean IS_REPLAY_SERVER;
+
 	public static int MAX_LENGTH, CLEANUP_REPLAYS;
-	
+
 	public static boolean RECORD_BLOCKS, REAL_CHANGES;
 	public static boolean RECORD_ITEMS, RECORD_ENTITIES;
-	public static boolean RECORD_CHAT;
-	public static boolean SAVE_STOP, RECORD_STARTUP, USE_OFFLINE_SKINS, HIDE_PLAYERS, UPDATE_NOTIFY, USE_DATABASE, ADD_PLAYERS;
-	public static boolean WORLD_RESET;
+	public static boolean SAVE_STOP, RECORD_STARTUP, USE_OFFLINE_SKINS, HIDE_PLAYERS, UPDATE_NOTIFY, ADD_PLAYERS;
 
 	public static ReplayProgression PROGRESS_TYPE = ReplayProgressType.XP_BAR;
 
 	public static ReplayQuality QUALITY = ReplayQuality.HIGH;
 	
-	public static String CHAT_FORMAT;
-	
+
 	public static void loadConfigs() {
 		
 		if (!file.exists()) {
-			LogUtils.log("Creating Config files...");
-			
+			cfg.set("general.is_replay_server", false);
 			cfg.set("general.max_length", 3600);
 			cfg.set("general.record_on_startup", false);
 			cfg.set("general.save_on_stop", false);
 			cfg.set("general.use_offline_skins", false);
 			cfg.set("general.quality", "high");
-			cfg.set("general.cleanup_replays", -1);
 			cfg.set("general.hide_players", false);
-			cfg.set("general.add_new_players", false);	
+			cfg.set("general.add_new_players", true);
 			cfg.set("general.update_notifications", true);
 
 			cfg.set("replaying.world.reset_changes", false);
@@ -59,8 +51,6 @@ public class ConfigManager {
 			cfg.set("recording.blocks.real_changes", true);
 			cfg.set("recording.entities.enabled", false);
 			cfg.set("recording.entities.items.enabled", true);
-			cfg.set("recording.chat.enabled", false);
-			cfg.set("recording.chat.format", "&r<{name}> {message}");
 
 
 			try {
@@ -78,25 +68,19 @@ public class ConfigManager {
 	}
 	
 	public static void loadData(boolean initial) {
+		IS_REPLAY_SERVER = cfg.getBoolean("general.is_replay_server");
 		MAX_LENGTH = cfg.getInt("general.max_length");
 		SAVE_STOP = cfg.getBoolean("general.save_on_stop");
 		RECORD_STARTUP = cfg.getBoolean("general.record_on_startup", false);
 		USE_OFFLINE_SKINS = cfg.getBoolean("general.use_offline_skins");
 		QUALITY = ReplayQuality.valueOf(cfg.getString("general.quality", "high").toUpperCase());
 		HIDE_PLAYERS = cfg.getBoolean("general.hide_players");
-		CLEANUP_REPLAYS = cfg.getInt("general.cleanup_replays", -1);
 		ADD_PLAYERS = cfg.getBoolean("general.add_new_players");
 		UPDATE_NOTIFY = cfg.getBoolean("general.update_notifications");
-		if (initial ) USE_DATABASE = cfg.getBoolean("general.use_mysql");
-		
-		WORLD_RESET = cfg.getBoolean("replaying.world.reset_changes", false);
-		
-		CHAT_FORMAT = cfg.getString("recording.chat.format");
 		RECORD_BLOCKS = cfg.getBoolean("recording.blocks.enabled");
 		REAL_CHANGES = cfg.getBoolean("recording.blocks.real_changes");
 		RECORD_ITEMS = cfg.getBoolean("recording.entities.items.enabled");
 		RECORD_ENTITIES = cfg.getBoolean("recording.entities.enabled");
-		RECORD_CHAT = cfg.getBoolean("recording.chat.enabled");
 
 		PROGRESS_TYPE = ReplayProgressType.valueOf(cfg.getString("replaying.progress_display", ReplayProgressType.getDefault().name()).toUpperCase());
 
@@ -108,14 +92,10 @@ public class ConfigManager {
 			cfg.load(file);
 			ItemConfig.cfg.load(ItemConfig.file);
 			Messages.loadMessages();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InvalidConfigurationException e) {
+		} catch (IOException | InvalidConfigurationException e) {
 			e.printStackTrace();
 		}
-		
-		loadData(false);
+
+        loadData(false);
 	}
 }

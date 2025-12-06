@@ -1,64 +1,98 @@
 package de.teamholy.replay.filesystem.saving;
 
-import java.util.ArrayList;
-import java.util.List;
 
+import de.teamholy.replay.database.DatabaseService;
 import de.teamholy.replay.replaysystem.Replay;
+import de.teamholy.replay.replaysystem.data.ReplayData;
+import de.teamholy.replay.replaysystem.data.ReplayInfo;
 import de.teamholy.replay.utils.fetcher.Consumer;
 
-public class ReplaySaver {
+import com.github.luben.zstd.ZstdInputStream;
+import com.github.luben.zstd.ZstdOutputStream;
 
-	public static IReplaySaver replaySaver;
-	
-	public static void register(IReplaySaver saver) {
-		replaySaver = saver;
-	}
-	
-	public static void unregister() {
-		replaySaver = null;
-	}
-	
-	public static boolean isRegistered() {
-		return replaySaver != null;
-	}
-	
-	public static void save(Replay replay) {
-		if (isRegistered()) {
-			replaySaver.saveReplay(replay);
-		}
-	}
-	
-	public static void load(String replayName, Consumer<Replay> consumer) {
-		if (isRegistered()) {
-			replaySaver.loadReplay(replayName, consumer);
-		} else {
-			consumer.accept(null);
-		}
-	}
-	
-	public static boolean exists(String replayName) {
-		if (isRegistered()) {
-			return replaySaver.replayExists(replayName);
-		} else {
-			return false;
-		}
-	}
-	
-	public static void delete(String replayName) {
-		if (isRegistered()) {
-			replaySaver.deleteReplay(replayName);
-		}
-	}
-	
-	public static List<String> getReplays() {
-		if (isRegistered()) {
-			return replaySaver.getReplays();
-		} else {
-			return new ArrayList<String>();
-		}
-	}
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
-	public static IReplaySaver getReplaySaver() {
-		return replaySaver;
-	}
+// TODO: Use NIO for better performance and implement en2do to upload the repalys into the mongo database
+public class ReplaySaver implements IReplaySaver {
+
+    private DatabaseService databaseService;
+    public static Map<String, ReplayInfo> replayCache = new HashMap<>();
+
+    public ReplaySaver(DatabaseService databaseService) {
+        this.databaseService = databaseService;
+    }
+
+    public static ReplayInfo getInfo(String replay) {
+        if (replayCache != null && replayCache.containsKey(replay)) return replayCache.get(replay);
+
+        return null;
+    }
+
+    @Override
+    public void saveReplay(Replay replay) {
+        try {
+            byte[] data;
+            try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+                 ZstdOutputStream zstdOut = new ZstdOutputStream(byteOut);
+                 ObjectOutputStream objectOut = new ObjectOutputStream(zstdOut)) {
+
+                objectOut.writeObject(replay.getData());
+                objectOut.flush();
+                zstdOut.flush();
+
+                data = byteOut.toByteArray();
+            }
+
+            if (replay.getReplayInfo() == null) {
+                replay.setReplayInfo(new ReplayInfo(replay.getId(), System.currentTimeMillis(), replay.getData().getDuration()));
+            }
+
+            databaseService.addReplay(replay.getId(), replay.getReplayInfo().getDuration(), replay.getReplayInfo().getTime(), data);
+
+            updateCache(replay.getId(), replay.getReplayInfo());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
+    public void loadReplay(String replayName, Consumer<Replay> consumer) {
+        databaseService.getReplayData(replayName).thenAccept(replay -> {
+            try (ByteArrayInputStream byteIn = new ByteArrayInputStream(replay);
+                 ZstdInputStream zstdIn = new ZstdInputStream(byteIn);
+                 ObjectInputStream objectIn = new ObjectInputStream(zstdIn)) {
+
+                ReplayData replayData = (ReplayData) objectIn.readObject();
+
+                consumer.accept(new Replay(replayName, replayData));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    @Override
+    public boolean replayExists(String replayName) {
+        if (replayCache != null && replayCache.containsKey(replayName)) return true;
+        return false;
+    }
+
+    @Override
+    public void deleteReplay(String replayName) {
+        databaseService.deleteReplay(replayName);
+        updateCache(replayName, null);
+    }
+
+    private void updateCache(String id, ReplayInfo info) {
+        if (info != null && id != null) {
+            replayCache.put(id, info);
+        } else replayCache.remove(id);
+    }
 }

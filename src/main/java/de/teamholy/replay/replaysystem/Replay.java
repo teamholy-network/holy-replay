@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -17,6 +19,7 @@ import de.teamholy.replay.replaysystem.replaying.Replayer;
 import de.teamholy.replay.utils.ReplayManager;
 import de.teamholy.replay.utils.StringUtils;
 
+@Getter @Setter
 public class Replay {
 
 	private String id;
@@ -52,7 +55,6 @@ public class Replay {
 		this.isRecording = true;
 		
 		ReplayManager.activeReplays.put(this.id, this);
-
 	}
 	
 	public void play(Player watcher) {
@@ -67,53 +69,5 @@ public class Replay {
 	private void startReplay(Player watcher) {
 		this.replayer = new Replayer(this, watcher);
 		this.isPlaying = this.replayer.start();
-	}
-	
-	public String getId() {
-		return id;
-	}
-	
-	public ReplayData getData() {
-		return data;
-	}
-	
-	public void setData(ReplayData data) {
-		this.data = data;
-	}
-	
-	public Recorder getRecorder() {
-		return recorder;
-	}
-	
-	public Replayer getReplayer() {
-		return replayer;
-	}
-	
-	public boolean isRecording() {
-		return isRecording;
-	}
-	
-	public void setId(String id) {
-		this.id = id;
-	}
-	
-	public void setRecording(boolean recording) {
-		this.isRecording = recording;
-	}
-	
-	public boolean isPlaying() {
-		return isPlaying;
-	}
-	
-	public void setPlaying(boolean isPlaying) {
-		this.isPlaying = isPlaying;
-	}
-	
-	public void setReplayInfo(ReplayInfo replayInfo) {
-		this.replayInfo = replayInfo;
-	}
-	
-	public ReplayInfo getReplayInfo() {
-		return replayInfo;
 	}
 }

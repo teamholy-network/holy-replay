@@ -25,6 +25,11 @@ repositories {
 dependencies {
     implementation project(':legacy')
 
+    implementation 'com.github.luben:zstd-jni:1.5.5-11'
+
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
     compileOnly "eu.koboo:en2do:$en2doVersion"
     compileOnly "org.spigotmc:spigot-api:1.21.9-R0.1-SNAPSHOT"
     compileOnly 'com.comphenix.protocol:ProtocolLib:5.3.0'

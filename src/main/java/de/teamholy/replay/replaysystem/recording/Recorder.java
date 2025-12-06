@@ -7,7 +7,6 @@ import de.teamholy.replay.ReplaySystem;
 import de.teamholy.replay.api.IReplayHook;
 import de.teamholy.replay.api.ReplayAPI;
 import de.teamholy.replay.filesystem.ConfigManager;
-import de.teamholy.replay.filesystem.saving.ReplaySaver;
 import de.teamholy.replay.replaysystem.Replay;
 import de.teamholy.replay.replaysystem.data.ActionData;
 import de.teamholy.replay.replaysystem.data.ActionType;
@@ -89,7 +88,6 @@ public class Recorder {
                         }
                         if ((packetData instanceof EntityData || packetData instanceof EntityMovingData || packetData instanceof EntityAnimationData) && !ConfigManager.RECORD_ENTITIES)
                             continue;
-                        if (packetData instanceof ChatData && !ConfigManager.RECORD_CHAT) continue;
 
 
                         ActionData actionData = new ActionData(currentTick, ActionType.PACKET, name, packetData);
@@ -143,13 +141,11 @@ public class Recorder {
 
         if (save) {
             this.data.setDuration(this.currentTick);
-
-            String creator = this.sender != null ? this.sender.getName() : "CONSOLE";
-            this.data.setCreator(creator);
             this.data.setWatchers(new HashMap<>());
             this.replay.setData(this.data);
-            this.replay.setReplayInfo(new ReplayInfo(this.replay.getId(), creator, System.currentTimeMillis(), this.currentTick));
-            ReplaySaver.save(this.replay);
+            this.replay.setReplayInfo(new ReplayInfo(this.replay.getId(), System.currentTimeMillis(), this.currentTick));
+
+            ReplaySystem.getInstance().getReplaySaver().saveReplay(this.replay);
         } else {
             this.data.getActions().clear();
         }

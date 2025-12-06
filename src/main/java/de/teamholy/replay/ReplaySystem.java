@@ -1,54 +1,49 @@
 package de.teamholy.replay;
 
 import java.util.HashMap;
-import de.teamholy.replay.database.DatabaseRegistry;
+
+import de.teamholy.core.bukkit.BukkitCore;
+import de.teamholy.replay.database.DatabaseService;
 import de.teamholy.replay.filesystem.ConfigManager;
-import de.teamholy.replay.filesystem.saving.DatabaseReplaySaver;
-import de.teamholy.replay.filesystem.saving.DefaultReplaySaver;
 import de.teamholy.replay.filesystem.saving.ReplaySaver;
 import de.teamholy.replay.replaysystem.Replay;
-import de.teamholy.replay.replaysystem.utils.ReplayCleanup;
 import de.teamholy.replay.utils.ReplayManager;
+import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
 
+@Getter
 public class ReplaySystem extends JavaPlugin {
 
-  public static ReplaySystem instance;
+    @Getter
+    public static ReplaySystem instance;
+    private DatabaseService databaseService;
+    private ReplaySaver replaySaver;
 
-  public final static String PREFIX = "§8[§3Replay§8] §r§7";
+
+    public final static String PREFIX = "§8[§3Replay§8] §r§7";
 
 
-  @Override
-  public void onDisable() {
-    for (Replay replay : new HashMap<>(ReplayManager.activeReplays).values()) {
-      if (replay.isRecording() && !replay.getRecorder().getData().getActions().isEmpty()) {
-        replay.getRecorder().stop(ConfigManager.SAVE_STOP);
-      }
-    }
-  }
-
-  @Override
-  public void onEnable() {
-    instance = this;
-
-    var start = System.currentTimeMillis();
-
-    ConfigManager.loadConfigs();
-    ReplayManager.register();
-
-    if (ConfigManager.USE_DATABASE) {
-      ReplaySaver.register(new DatabaseReplaySaver());
-      DatabaseRegistry.getDatabase().getService().getReplays()
-          .forEach(info -> DatabaseReplaySaver.replayCache.put(info.getID(), info));
-    } else {
-      ReplaySaver.register(new DefaultReplaySaver());
+    @Override
+    public void onDisable() {
+        for (Replay replay : new HashMap<>(ReplayManager.activeReplays).values()) {
+            if (replay.isRecording() && !replay.getRecorder().getData().getActions().isEmpty()) {
+                replay.getRecorder().stop(ConfigManager.SAVE_STOP);
+            }
+        }
     }
 
-    getLogger().info("Finished (" + (System.currentTimeMillis() - start) + "ms)");
 
-  }
+    @Override
+    public void onEnable() {
+        instance = this;
 
-  public static ReplaySystem getInstance() {
-    return instance;
-  }
+        var mongoManager = BukkitCore.getAPI().getMongoManager();
+        this.databaseService = new DatabaseService(mongoManager);
+        this.replaySaver = new ReplaySaver(databaseService);
+
+        ConfigManager.loadConfigs();
+        ReplayManager.register();
+    }
+
 }
+
