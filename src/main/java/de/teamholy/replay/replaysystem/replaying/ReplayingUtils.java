@@ -359,7 +359,7 @@ public class ReplayingUtils {
                 npc.remove();
                 replayer.getNPCList().remove(action.getName());
 
-                SpawnData oldSpawnData = new SpawnData(npc.getUuid(), LocationData.fromLocation(npc.getLocation()), signatures.get(action.getName()));
+                SpawnData oldSpawnData = new SpawnData(npc.getUuid(), LocationData.fromLocation(npc.getLocation()), signatures.get(action.getName()), npc.getDisplayName());
                 this.lastSpawnActions.addLast(new ActionData(0, ActionType.SPAWN, action.getName(), oldSpawnData));
 
                 if (action.getType() == ActionType.DESPAWN) {
@@ -466,6 +466,12 @@ public class ReplayingUtils {
         }
 
         INPC npc = !VersionUtil.isCompatible(VersionEnum.V1_8) ? new PacketNPC(MathUtils.randInt(10000, 20000), spawnData.getUuid(), action.getName()) : new PacketNPCOld(MathUtils.randInt(10000, 20000), spawnData.getUuid(), action.getName());
+
+        // Setze displayName wenn vorhanden
+        if (spawnData.getDisplayName() != null) {
+            npc.setDisplayName(spawnData.getDisplayName());
+        }
+
         this.replayer.getNPCList().put(action.getName(), npc);
         this.replayer.getReplay().getData().getWatchers().put(action.getName(), new PlayerWatcher(action.getName()));
         Location spawn = LocationData.toLocation(spawnData.getLocation());

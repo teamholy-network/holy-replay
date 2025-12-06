@@ -160,11 +160,12 @@ public class Recorder {
 
     public void createSpawnAction(Player player, Location loc, boolean first) {
         SignatureData[] signArr = new SignatureData[1];
+        String displayName = player.getDisplayName();
 
         BukkitCore.getAPI().getSkinService().getEntityAsync(player.getUniqueId(), () -> BukkitCore.getAPI().getSkinService().getRepository().findFirstById(player.getUniqueId()), skinProfile -> {
             signArr[0] = new SignatureData(player.getName(), skinProfile.getValue(), skinProfile.getSignature());
 
-            ActionData spawnData = new ActionData(0, ActionType.SPAWN, player.getName(), new SpawnData(player.getUniqueId(), LocationData.fromLocation(loc), signArr[0]));
+            ActionData spawnData = new ActionData(0, ActionType.SPAWN, player.getName(), new SpawnData(player.getUniqueId(), LocationData.fromLocation(loc), signArr[0], displayName));
             addData(first ? 0 : currentTick, spawnData);
 
             ActionData invData = new ActionData(0, ActionType.PACKET, player.getName(), NPCManager.copyFromPlayer(player, true, true));

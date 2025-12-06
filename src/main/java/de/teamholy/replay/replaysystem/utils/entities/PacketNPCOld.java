@@ -53,6 +53,8 @@ public class PacketNPCOld implements INPC{
 	
 	private String name;
 	
+	private String displayName;
+
 	private int tabMode;
 	
 	private WrappedDataWatcher data;
@@ -290,7 +292,8 @@ public class PacketNPCOld implements INPC{
 		infoPacket.setAction(EnumWrappers.PlayerInfoAction.ADD_PLAYER);
 		
 		WrappedGameProfile profile = this.profile != null ? this.profile : new WrappedGameProfile(this.uuid, this.name);
-		PlayerInfoData data = new PlayerInfoData(profile, 1, EnumWrappers.NativeGameMode.CREATIVE, WrappedChatComponent.fromText(this.name));
+		String nameToDisplay = this.displayName != null ? this.displayName : this.name;
+		PlayerInfoData data = new PlayerInfoData(profile, 1, EnumWrappers.NativeGameMode.CREATIVE, WrappedChatComponent.fromText(nameToDisplay));
 		List<PlayerInfoData> dataList = new ArrayList<PlayerInfoData>();
 		dataList.add(data);
 		
@@ -303,7 +306,8 @@ public class PacketNPCOld implements INPC{
 		infoPacket.setAction(EnumWrappers.PlayerInfoAction.REMOVE_PLAYER);
 
 		WrappedGameProfile profile = this.profile != null ? this.profile : new WrappedGameProfile(this.uuid, this.name);
-		PlayerInfoData data = new PlayerInfoData(profile, 1, EnumWrappers.NativeGameMode.CREATIVE, WrappedChatComponent.fromText(this.name));
+		String nameToDisplay = this.displayName != null ? this.displayName : this.name;
+		PlayerInfoData data = new PlayerInfoData(profile, 1, EnumWrappers.NativeGameMode.CREATIVE, WrappedChatComponent.fromText(nameToDisplay));
 		List<PlayerInfoData> dataList = new ArrayList<PlayerInfoData>();
 		dataList.add(data);
 
@@ -335,6 +339,14 @@ public class PacketNPCOld implements INPC{
 		this.name = name;
 	}
 	
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
 	public void setUuid(UUID uuid) {
 		this.uuid = uuid;
 	}

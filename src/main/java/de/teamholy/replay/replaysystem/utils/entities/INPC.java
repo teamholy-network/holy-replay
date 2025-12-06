@@ -47,6 +47,10 @@ public interface INPC {
 	
 	void setName(String name);
 	
+	String getDisplayName();
+
+	void setDisplayName(String displayName);
+
 	void setUuid(UUID uuid);
 	
 	void setData(WrappedDataWatcher data);
