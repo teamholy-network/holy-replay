@@ -1,6 +1,7 @@
 package de.teamholy.replay.api;
 
 import de.teamholy.replay.replaysystem.Replay;
+import de.teamholy.replay.replaysystem.data.ActionData;
 import de.teamholy.replay.replaysystem.data.ReplayInfo;
 import org.bukkit.entity.Player;
 
@@ -41,7 +42,7 @@ public interface IReplayAPI {
      * @param save Ob das Replay gespeichert werden soll
      * @return CompletableFuture das abgeschlossen wird wenn das Replay gestoppt wurde
      */
-    CompletableFuture<Void> stopRecording(String replayId, boolean save);
+    void stopRecording(String replayId, boolean save);
 
     /**
      * Stoppt eine laufende Aufnahme mit Option für leere Replays
@@ -51,7 +52,42 @@ public interface IReplayAPI {
      * @param ignoreEmpty Ob leere Replays ignoriert werden sollen
      * @return CompletableFuture das abgeschlossen wird wenn das Replay gestoppt wurde
      */
-    CompletableFuture<Void> stopRecording(String replayId, boolean save, boolean ignoreEmpty);
+    void stopRecording(String replayId, boolean save, boolean ignoreEmpty);
+
+    /*
+    * Fügt einer laufenden Aufnahme Aktionsdaten hinzu
+    *
+    * @param replayId ID des Replays
+    * @param actionData Die hinzuzufügenden Aktionsdaten
+    *
+    * @return void
+     */
+    void addDataToRecording(String replayId, ActionData actionData);
+
+    /**
+     * Fügt allen laufenden Aufnahmen Aktionsdaten hinzu
+     *
+     * @param actionData Die hinzuzufügenden Aktionsdaten
+     * @return void
+     */
+    void addDataToAllRecordings(ActionData actionData);
+    /*
+    * Fügt allen laufenden Aufnahme eine Nachricht hinzu
+    *
+    * @param replayId ID des Replays
+    * @param message Die hinzuzufügende Nachricht
+    *
+     */
+    void addMessageToAllRecordings(String message);
+
+    /*
+    * Fügt einer laufenden Aufnahme eine Nachricht hinzu
+    * @param replayId ID des Replays
+    * @param message Die hinzuzufü
+    * gende Nachricht
+    *
+     */
+    void addMessageToRecording(String replayId, String message);
 
     // ========== Playback ==========
 

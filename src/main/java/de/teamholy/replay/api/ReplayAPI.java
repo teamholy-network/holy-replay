@@ -4,12 +4,12 @@ import de.teamholy.replay.ReplaySystem;
 import de.teamholy.replay.filesystem.saving.IReplaySaver;
 import de.teamholy.replay.replaysystem.Replay;
 import de.teamholy.replay.replaysystem.data.ActionData;
+import de.teamholy.replay.replaysystem.data.ActionType;
 import de.teamholy.replay.replaysystem.data.ReplayInfo;
 import de.teamholy.replay.replaysystem.data.types.ChatData;
 import de.teamholy.replay.replaysystem.recording.StaticModeManager;
 import de.teamholy.replay.replaysystem.replaying.ReplayHelper;
 import de.teamholy.replay.replaysystem.replaying.Replayer;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -54,22 +54,72 @@ public class ReplayAPI implements IReplayAPI {
     }
 
     @Override
-    public CompletableFuture<Void> stopRecording(String replayId, boolean save) {
-        return stopRecording(replayId, save, false);
+    public void stopRecording(String replayId, boolean save) {
+        stopRecording(replayId, save, false);
     }
 
     @Override
-    public CompletableFuture<Void> stopRecording(String replayId, boolean save, boolean ignoreEmpty) {
-        return CompletableFuture.runAsync(() -> {
-            if (Replay.ACTIVE_REPLAYS.containsKey(replayId)) {
-                Replay replay = Replay.ACTIVE_REPLAYS.get(replayId);
-                boolean shouldSave = save && (!replay.getRecorder().getData().getActions().isEmpty() || !ignoreEmpty);
+    public void stopRecording(String replayId, boolean save, boolean ignoreEmpty) {
+        if (Replay.ACTIVE_REPLAYS.containsKey(replayId)) {
+            Replay replay = Replay.ACTIVE_REPLAYS.get(replayId);
+            boolean shouldSave = save && (!replay.getRecorder().getData().getActions().isEmpty() || !ignoreEmpty);
 
-                if (replay.isRecording()) {
-                    replay.getRecorder().stop(shouldSave);
-                }
+            if (replay.isRecording()) {
+                replay.getRecorder().stop(shouldSave);
             }
-        });
+        }
+    }
+
+    @Override
+    public void addDataToRecording(String replayId, de.teamholy.replay.replaysystem.data.ActionData actionData) {
+        if (Replay.ACTIVE_REPLAYS.containsKey(replayId)) {
+            Replay replay = Replay.ACTIVE_REPLAYS.get(replayId);
+            if (replay.isRecording()) {
+                replay.getRecorder().addData(replay.getRecorder().getCurrentTick(), actionData);
+            }
+        }
+    }
+
+    @Override
+    public void addDataToAllRecordings(de.teamholy.replay.replaysystem.data.ActionData actionData) {
+        for (Replay replay : Replay.ACTIVE_REPLAYS.values()) {
+            if (replay.isRecording()) {
+                replay.getRecorder().addData(replay.getRecorder().getCurrentTick(), actionData);
+            }
+        }
+    }
+
+    @Override
+    public void addMessageToAllRecordings(String message) {
+        for (Replay replay : Replay.ACTIVE_REPLAYS.values()) {
+            if (replay.isRecording()) {
+                ChatData chatData = new ChatData(message);
+                ActionData actionData = new ActionData(
+                        replay.getRecorder().getCurrentTick(),
+                        ActionType.MESSAGE,
+                        "SYSTEM",
+                        chatData
+                );
+                replay.getRecorder().addData(replay.getRecorder().getCurrentTick(), actionData);
+            }
+        }
+    }
+
+    @Override
+    public void addMessageToRecording(String replayId, String message) {
+        if (Replay.ACTIVE_REPLAYS.containsKey(replayId)) {
+            Replay replay = Replay.ACTIVE_REPLAYS.get(replayId);
+            if (replay.isRecording()) {
+                ChatData chatData = new ChatData(message);
+                ActionData actionData = new ActionData(
+                        replay.getRecorder().getCurrentTick(),
+                        ActionType.MESSAGE,
+                        "SYSTEM",
+                        chatData
+                );
+                replay.getRecorder().addData(replay.getRecorder().getCurrentTick(), actionData);
+            }
+        }
     }
 
     // ========== Playback ==========
@@ -180,7 +230,7 @@ public class ReplayAPI implements IReplayAPI {
         // TODO: Implementierung für schnelles Metadaten-Laden
         // Aktuell wird das komplette Replay geladen
         return loadReplay(replayId).thenApply(replay ->
-            replay.map(Replay::getReplayInfo)
+                replay.map(Replay::getReplayInfo)
         );
     }
 

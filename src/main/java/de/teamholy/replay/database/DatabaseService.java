@@ -16,14 +16,8 @@ public class DatabaseService extends IDatabaseService {
 
     @Override
     public void addReplay(String id, int duration, Long time, byte[] data) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                ReplayEntity entity = new ReplayEntity(id, duration, time, data);
-                replayRepository.save(entity);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to add replay: " + id, e);
-            }
-        });
+        ReplayEntity entity = new ReplayEntity(id, duration, time, data);
+        replayRepository.asyncSave(entity);
     }
 
     @Override
@@ -42,24 +36,12 @@ public class DatabaseService extends IDatabaseService {
 
     @Override
     public void deleteReplay(String id) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                replayRepository.deleteById(id);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to delete replay: " + id, e);
-            }
-        });
+        replayRepository.asyncDeleteById(id);
     }
 
     @Override
     public CompletableFuture<Boolean> exists(String id) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return replayRepository.existsById(id);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to check replay existence: " + id, e);
-            }
-        });
+        return replayRepository.asyncExistsById(id);
     }
 
 }

@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-// TODO: Use Zstd for better performance and implement en2do to upload the repalys into the mongo database
 public class ReplaySaver implements IReplaySaver {
 
     private DatabaseService databaseService;
