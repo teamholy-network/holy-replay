@@ -7,6 +7,8 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
+
 
 public enum ReplayProgressType implements ReplayProgression {
 
@@ -30,8 +32,8 @@ public enum ReplayProgressType implements ReplayProgression {
             String status = replayer.isPaused() ? "§cPaused" : "§aPlaying";
             String speed = replayer.getSpeed() + "x";
 
-            BaseComponent component = TextComponent.fromLegacy(String.format(format, status, formatTime(currentTicks), formatTime(duration), speed));
-            sendActionBar(replayer.getWatchingPlayer(), component.toLegacyText());
+            BaseComponent[] component = TextComponent.fromLegacyText(String.format(format, status, formatTime(currentTicks), formatTime(duration), speed));
+            sendActionBar(replayer.getWatchingPlayer(), Arrays.toString(component));
         }
     },
     NONE {
@@ -75,10 +77,6 @@ public enum ReplayProgressType implements ReplayProgression {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        } else {
-            // Für neuere Versionen verwenden wir die Spigot API
-            BaseComponent component = TextComponent.fromLegacy(message);
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component);
         }
     }
 

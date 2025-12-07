@@ -26,10 +26,7 @@ import de.teamholy.replay.utils.VersionUtil;
 import de.teamholy.replay.utils.VersionUtil.VersionEnum;
 import de.teamholy.replay.utils.version.EntityBridge;
 import org.bukkit.*;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.Projectile;
+import org.bukkit.entity.*;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
@@ -188,8 +185,8 @@ public class ReplayingUtils {
                 data.getWatcher(action.getName()).setElytra(!reversed ? update.isGliding() : false);
                 data.getWatcher(action.getName()).setSwimming(!reversed ? update.isSwimming() : false);
 
-                WrappedDataWatcher dataWatcher = data.getWatcher(action.getName()).getMetadata(new MetadataBuilder(npc.getData()));
-                npc.setData(dataWatcher);
+                // getMetadata gibt jetzt DataWatcher zurück
+                npc.setData(data.getWatcher(action.getName()).getMetadata(new MetadataBuilder(npc.getData())));
 
                 npc.updateMetadata();
 
@@ -217,20 +214,7 @@ public class ReplayingUtils {
             if (action.getPacketData() instanceof BedEnterData) {
                 BedEnterData bed = (BedEnterData) action.getPacketData();
 
-                if (VersionUtil.isAbove(VersionEnum.V1_14)) {
-                    npc.teleport(LocationData.toLocation(bed.getLocation()), true);
-
-                    npc.setData(new MetadataBuilder(npc.getData())
-                            .setPoseField("SLEEPING")
-                            .getData());
-
-                    npc.updateMetadata();
-                    npc.teleport(LocationData.toLocation(bed.getLocation()), true);
-
-
-                } else {
-                    npc.sleep(LocationData.toLocation(bed.getLocation()));
-                }
+                npc.sleep(LocationData.toLocation(bed.getLocation()));
             }
 
             if (action.getPacketData() instanceof EntityItemData) {
@@ -476,13 +460,8 @@ public class ReplayingUtils {
         this.replayer.getReplay().getData().getWatchers().put(action.getName(), new PlayerWatcher(action.getName()));
         Location spawn = LocationData.toLocation(spawnData.getLocation());
 
-        if (VersionUtil.isCompatible(VersionEnum.V1_8)) {
-            npc.setData(new MetadataBuilder(this.replayer.getWatchingPlayer()).resetValue().getData());
-        } else if (VersionUtil.isAbove(VersionEnum.V1_20)) {
-            npc.setData(new MetadataBuilder().getData());
-        } else {
-            npc.setData(new MetadataBuilder(this.replayer.getWatchingPlayer()).setArrows(0).resetValue().getData());
-        }
+        npc.setData(new MetadataBuilder().resetValue().getData());
+
 
         if (ConfigManager.HIDE_PLAYERS && !action.getName().equals(this.replayer.getWatchingPlayer().getName())) {
             tabMode = 2;

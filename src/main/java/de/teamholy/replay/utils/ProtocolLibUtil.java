@@ -1,7 +1,7 @@
 package de.teamholy.replay.utils;
 
-import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import de.teamholy.replay.replaysystem.utils.entities.PacketNPC;
+import net.minecraft.server.v1_8_R3.DataWatcher;
 
 public class ProtocolLibUtil {
 
@@ -11,8 +11,13 @@ public class ProtocolLibUtil {
      */
     public static void prepare() {
         PacketNPC npc = new PacketNPC();
-        npc.setData(new WrappedDataWatcher());
+        DataWatcher dataWatcher = new DataWatcher(null);
+        dataWatcher.a(6, (float) 20); // Health
+        dataWatcher.a(10, (byte) 127); // Skin layers
+        npc.setData(dataWatcher);
         npc.getInfoAddPacket();
         npc.look(0, 0);
     }
 }
+
+

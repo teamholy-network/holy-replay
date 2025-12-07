@@ -53,8 +53,8 @@ public interface INPC {
 
 	void setUuid(UUID uuid);
 	
-	void setData(WrappedDataWatcher data);
-	
+	void setData(net.minecraft.server.v1_8_R3.DataWatcher data);
+
 	WrappedDataWatcher getData();
 	
 	void setProfile(WrappedGameProfile profile);

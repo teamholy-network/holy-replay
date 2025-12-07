@@ -1,50 +1,49 @@
 package de.teamholy.replay.replaysystem.utils;
 
-
-import com.comphenix.protocol.wrappers.EnumWrappers;
-import com.comphenix.protocol.wrappers.EnumWrappers.EntityPose;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
-import de.teamholy.replay.utils.VersionUtil;
-import de.teamholy.replay.utils.VersionUtil.VersionEnum;
-import org.bukkit.entity.Entity;
-
-import java.lang.reflect.Method;
-
+import net.minecraft.server.v1_8_R3.DataWatcher;
 
 public class MetadataBuilder {
 
-    private WrappedDataWatcher data;
-
-    public MetadataBuilder(Entity en) {
-        this.data = WrappedDataWatcher.getEntityWatcher(en).deepClone();
-    }
-
-    public MetadataBuilder(WrappedDataWatcher data) {
-        this.data = data;
-    }
+    private DataWatcher dataWatcher;
 
     public MetadataBuilder() {
-        this.data = new WrappedDataWatcher();
+        this.dataWatcher = new DataWatcher(null);
+    }
+    /**
+     * Erstellt MetadataBuilder aus WrappedDataWatcher (für Kompatibilität)
+     */
+    public MetadataBuilder(WrappedDataWatcher wrappedDataWatcher) {
+        if (wrappedDataWatcher != null) {
+            this.dataWatcher = (DataWatcher) wrappedDataWatcher.getHandle();
+        } else {
+            this.dataWatcher = new DataWatcher(null);
+        }
     }
 
     public MetadataBuilder setValue(int index, Object value) {
-        this.data.setObject(index, value);
+        try {
+            if (this.dataWatcher.c() != null) {
+                this.dataWatcher.watch(index, value);
+            } else {
+                this.dataWatcher.a(index, value);
+            }
+        } catch (Exception e) {
+            try {
+                this.dataWatcher.a(index, value);
+            } catch (Exception ignored) {
+                this.dataWatcher.watch(index, value);
+            }
+        }
         return this;
     }
 
     public MetadataBuilder setByte(int index, byte value) {
-        this.data.setByte(index, value, false);
-        return this;
-    }
-
-    public MetadataBuilder setBoolean(int index, boolean value) {
-        this.data.setBoolean(index, value, false);
-        return this;
+        return setValue(index, value);
     }
 
     public MetadataBuilder setInteger(int index, int value) {
-        this.data.setInteger(index, value, false);
-        return this;
+        return setValue(index, value);
     }
 
     public MetadataBuilder setInvisible() {
@@ -56,25 +55,11 @@ public class MetadataBuilder {
     }
 
     public MetadataBuilder resetValue() {
-        if (VersionUtil.isAbove(VersionEnum.V1_14)) {
-            return setByte(0, (byte) 0).setPoseField("STANDING");
-        } else {
-            return setValue(0, (byte) 0);
-        }
+        return setValue(0, (byte) 0);
     }
 
     public MetadataBuilder setArrows(int amount) {
-
-        if (VersionUtil.isBetween(VersionEnum.V1_10, VersionEnum.V1_13)) {
-            return setValue(10, amount);
-        } else if (VersionUtil.isBetween(VersionEnum.V1_14, VersionEnum.V1_16)) {
-            return setValue(11, amount);
-        } else if (VersionUtil.isAbove(VersionEnum.V1_17)) {
-            return setValue(12, amount);
-        } else {
-            return setValue(9, amount);
-        }
-
+        return setValue(9, amount);
     }
 
     public MetadataBuilder setGlowing() {
@@ -90,7 +75,7 @@ public class MetadataBuilder {
     }
 
     public MetadataBuilder setHealth(float amount) {
-        return setValue(7, amount); //Might be Version problems with field numbers http://wiki.vg/Entity_metadata
+        return setValue(6, amount);
     }
 
     public MetadataBuilder setAir(int amount) {
@@ -98,46 +83,16 @@ public class MetadataBuilder {
     }
 
     public MetadataBuilder enableSkinParts() {
-        if (VersionUtil.isBetween(VersionEnum.V1_9, VersionEnum.V1_20)) return this;
-
         byte skinFlags = 0x01 | 0x02 | 0x04 | 0x08 | 0x10 | 0x20 | 0x40;
-        if (VersionUtil.isCompatible(VersionEnum.V1_8)) {
-            return setValue(10, skinFlags);
-        } else if (VersionUtil.isBetween(VersionEnum.V1_9, VersionEnum.V1_21)) {
-            return setByte(17, skinFlags);
-        } else {
-            return setByte(16, skinFlags);
-        }
-
+        return setValue(10, skinFlags);
     }
 
-    public WrappedDataWatcher getData() {
+    /**
+     * Gibt NMS DataWatcher zurück (wie NPCEntry verwendet)
+     */
+    public DataWatcher getData() {
         enableSkinParts();
-
-        return this.data;
-    }
-
-    public MetadataBuilder setPoseField(String type) {
-        if (VersionUtil.isAbove(VersionEnum.V1_20)) {
-            EntityPose pose = EntityPose.valueOf(type);
-            this.data.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(6, WrappedDataWatcher.Registry.get(EnumWrappers.getEntityPoseClass(), false)), pose.toNms());
-            return this;
-        } else if (VersionUtil.isAbove(VersionEnum.V1_17)) {
-            return setValue(6, EntityPose.valueOf(type).toNms());
-        }
-
-        Object enumField = null;
-
-        try {
-            Class<?> entityPose = Class.forName("net.minecraft.server." + VersionUtil.VERSION + ".EntityPose");
-
-            Method valueOf = entityPose.getMethod("valueOf", String.class);
-            enumField = valueOf.invoke(null, type);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return setValue(6, enumField);
+        return this.dataWatcher;
     }
 }
+

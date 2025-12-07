@@ -29,55 +29,21 @@ public class PlayerWatcher implements Serializable{
 		this.name = name;
 	}
 	
-	public WrappedDataWatcher getMetadata(MetadataBuilder builder) {
-		
+	public net.minecraft.server.v1_8_R3.DataWatcher getMetadata(MetadataBuilder builder) {
+
 		if (isValueActive()) {
 			byte sneakByte = (byte) (this.sneaking ? 0x02 : 0);
 			byte burnByte = (byte) (this.burning ? 0x01 : 0);
 			byte oldBlock = (byte) (this.blocking ? 0x10 : 0);
 			byte elytraByte = (byte) (this.elytra ? 0x80 : 0);
 
-			if (VersionUtil.isAbove(VersionEnum.V1_13)) {
-				if (!(VersionUtil.isCompatible(VersionEnum.V1_13) && this.swimming)) {
-					oldBlock = 0;
-				} else {
-					oldBlock = (byte) (0x10 | 0x08);
-				}
-			}
-			
+			// Für 1.8: Keine Version-Checks mehr nötig
 			byte value = (byte) (burnByte | sneakByte | oldBlock | elytraByte);
-			
-
-			if (VersionUtil.isAbove(VersionEnum.V1_20)) {
-
-				builder.setByte(0, value);
-			} else {
-				builder.setValue(0, value);
-			}
-
-			if (VersionUtil.isAbove(VersionEnum.V1_14)) {
-				builder.setPoseField(getActivePose());
-			}
-			
-			
-			
+			builder.setValue(0, value);
 		} else {
 			builder.resetValue();
 		}
-		
-		if (!VersionUtil.isCompatible(VersionEnum.V1_8)) {
-			byte blockByte = (byte) (this.blocking ? 0x01 : 0);
 
-			if (VersionUtil.isBetween(VersionEnum.V1_10, VersionEnum.V1_13)) {
-				builder.setValue(6, blockByte);
-			} else if (VersionUtil.isBetween(VersionEnum.V1_14, VersionEnum.V1_16)) {
-				builder.setValue(7, blockByte);
-			} else if (VersionUtil.isAbove(VersionEnum.V1_17)) {
-				builder.setByte(8, blockByte);
-			} else {
-				builder.setValue(5, blockByte);
-			}
-		}
 
 		return builder.getData();
 	}

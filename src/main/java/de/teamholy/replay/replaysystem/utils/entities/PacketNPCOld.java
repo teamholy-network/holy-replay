@@ -351,8 +351,8 @@ public class PacketNPCOld implements INPC{
 		this.uuid = uuid;
 	}
 	
-	public void setData(WrappedDataWatcher data) {
-		this.data = data;
+	public void setData(net.minecraft.server.v1_8_R3.DataWatcher data) {
+		this.data = new WrappedDataWatcher(data);
 	}
 	
 	public void setProfile(WrappedGameProfile profile) {

@@ -55,8 +55,8 @@ public class Replayer {
     public Replayer(Replay replay, Player watcher) {
         this.replay = replay;
         this.watcher = watcher;
-        this.npcs = new HashMap<String, INPC>();
-        this.entities = new HashMap<Integer, IEntity>();
+        this.npcs = new HashMap<>();
+        this.entities = new HashMap<>();
         this.blockChanges = new HashMap<>();
         this.utils = new ReplayingUtils(this);
         this.session = new ReplaySession(this);
@@ -64,7 +64,6 @@ public class Replayer {
         this.followMode = false;
         this.followTarget = null;
     }
-
 
     public boolean start() {
         ReplayData data = this.replay.getData();
