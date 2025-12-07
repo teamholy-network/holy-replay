@@ -2,6 +2,7 @@ package de.teamholy.replay.api;
 
 import de.teamholy.replay.ReplaySystem;
 import de.teamholy.replay.filesystem.saving.IReplaySaver;
+import de.teamholy.replay.filesystem.saving.ReplaySaver;
 import de.teamholy.replay.replaysystem.Replay;
 import de.teamholy.replay.replaysystem.data.ActionData;
 import de.teamholy.replay.replaysystem.data.ActionType;
@@ -154,25 +155,18 @@ public class ReplayAPI implements IReplayAPI {
     public CompletableFuture<Optional<Replay>> playReplay(String replayId, Player watcher) {
         CompletableFuture<Optional<Replay>> future = new CompletableFuture<>();
 
-        replaySaver.replayExists(replayId).whenCompleteAsync((exists, throwable) -> {
-            if (throwable != null) {
-                future.completeExceptionally(throwable);
-                return;
-            }
-
-            if (exists && !ReplayHelper.replaySessions.containsKey(watcher.getName())) {
-                replaySaver.loadReplay(replayId, replay -> {
-                    if (replay != null) {
-                        replay.play(watcher);
-                        future.complete(Optional.of(replay));
-                    } else {
-                        future.complete(Optional.empty());
-                    }
-                });
-            } else {
-                future.complete(Optional.empty());
-            }
-        });
+        if (!ReplayHelper.replaySessions.containsKey(watcher.getName())) {
+            ReplaySystem.getInstance().getReplaySaver().loadReplay(replayId, replay -> {
+                if (replay != null) {
+                    replay.play(watcher);
+                    future.complete(Optional.of(replay));
+                } else {
+                    future.complete(Optional.empty());
+                }
+            });
+        } else {
+            future.complete(Optional.empty());
+        }
 
         return future;
     }
