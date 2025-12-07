@@ -3,6 +3,7 @@ package de.teamholy.replay;
 import java.util.HashMap;
 
 import de.teamholy.core.bukkit.BukkitCore;
+import de.teamholy.replay.command.SimpleReplayCommand;
 import de.teamholy.replay.database.DatabaseService;
 import de.teamholy.replay.filesystem.ConfigManager;
 import de.teamholy.replay.filesystem.saving.ReplaySaver;
@@ -43,6 +44,9 @@ public class ReplaySystem extends JavaPlugin {
         instance = this;
 
         registerEvents();
+
+        this.getCommand("replay").setExecutor(new SimpleReplayCommand());
+
 
         var mongoManager = BukkitCore.getAPI().getMongoManager();
         this.databaseService = new DatabaseService(mongoManager);

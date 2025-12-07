@@ -7,14 +7,17 @@ import de.teamholy.replay.replaysystem.data.ActionData;
 import de.teamholy.replay.utils.StringUtils;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Manages continuous recording in STATIC mode with a rolling buffer.
  * Records all players continuously and saves the last X minutes on demand.
+ * Supports world-based filtering.
  */
 @Getter
 public class StaticModeManager {
@@ -25,6 +28,7 @@ public class StaticModeManager {
 
     private Replay continuousReplay;
     private final Map<String, Long> playerJoinTimes = new ConcurrentHashMap<>();
+    private final List<String> recordedWorlds = new ArrayList<>();
     private boolean isRunning = false;
 
     private StaticModeManager() {
@@ -41,29 +45,58 @@ public class StaticModeManager {
      * Starts continuous recording of all players
      */
     public void start() {
+        start(Collections.emptyList());
+    }
+
+    /**
+     * Starts continuous recording of players in specific worlds
+     *
+     * @param worlds Welten, die aufgenommen werden sollen (leer = alle Welten)
+     */
+    public void start(List<World> worlds) {
         if (isRunning) {
             return;
         }
 
         isRunning = true;
 
+        // Speichere Weltnamen für Filter
+        recordedWorlds.clear();
+        if (!worlds.isEmpty()) {
+            recordedWorlds.addAll(worlds.stream()
+                    .map(World::getName)
+                    .toList());
+        }
+
         // Create a continuous replay with a special ID
         continuousReplay = new Replay();
         continuousReplay.setId(CONTINUOUS_REPLAY_ID);
 
-        // Start recording all online players
-        List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
-        if (!onlinePlayers.isEmpty()) {
-            continuousReplay.recordAll(onlinePlayers);
+        // Start recording players in specified worlds (or all if empty)
+        List<Player> playersToRecord = getPlayersInRecordedWorlds();
+        if (!playersToRecord.isEmpty()) {
+            continuousReplay.recordAll(playersToRecord);
+
+            // Setze Welten-Filter in den Replay-Daten
+            if (!recordedWorlds.isEmpty()) {
+                continuousReplay.getData().setWorlds(new ArrayList<>(recordedWorlds));
+            }
 
             // Track join times
             long now = System.currentTimeMillis();
-            for (Player player : onlinePlayers) {
+            for (Player player : playersToRecord) {
                 playerJoinTimes.put(player.getName(), now);
+            }
+        } else {
+            // Starte leere Aufnahme, Spieler werden beim Join hinzugefügt
+            continuousReplay.recordAll(new ArrayList<>());
+            if (!recordedWorlds.isEmpty()) {
+                continuousReplay.getData().setWorlds(new ArrayList<>(recordedWorlds));
             }
         }
 
-        Bukkit.getLogger().info("[ReplaySystem] Static Mode: Continuous recording started");
+        String worldInfo = recordedWorlds.isEmpty() ? "all worlds" : "worlds: " + String.join(", ", recordedWorlds);
+        Bukkit.getLogger().info("[ReplaySystem] Static Mode: Continuous recording started for " + worldInfo);
     }
 
     /**
@@ -81,16 +114,113 @@ public class StaticModeManager {
         }
 
         playerJoinTimes.clear();
+        recordedWorlds.clear();
         continuousReplay = null;
 
         Bukkit.getLogger().info("[ReplaySystem] Static Mode: Continuous recording stopped");
     }
 
     /**
-     * Called when a player joins - adds them to continuous recording
+     * Adds a world to the recording
+     *
+     * @param world Welt zum Hinzufügen
+     * @return true wenn erfolgreich
+     */
+    public boolean addWorld(World world) {
+        if (!isRunning || world == null) {
+            return false;
+        }
+
+        String worldName = world.getName();
+        if (!recordedWorlds.contains(worldName)) {
+            recordedWorlds.add(worldName);
+
+            if (continuousReplay != null) {
+                continuousReplay.getData().getWorlds().add(worldName);
+
+                // Füge alle Spieler in dieser Welt hinzu
+                for (Player player : world.getPlayers()) {
+                    onPlayerJoin(player);
+                }
+            }
+
+            Bukkit.getLogger().info("[ReplaySystem] Static Mode: Added world '" + worldName + "' to recording");
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Removes a world from the recording
+     *
+     * @param world Welt zum Entfernen
+     * @return true wenn erfolgreich
+     */
+    public boolean removeWorld(World world) {
+        if (!isRunning || world == null) {
+            return false;
+        }
+
+        String worldName = world.getName();
+        if (recordedWorlds.remove(worldName)) {
+            if (continuousReplay != null) {
+                continuousReplay.getData().getWorlds().remove(worldName);
+            }
+
+            Bukkit.getLogger().info("[ReplaySystem] Static Mode: Removed world '" + worldName + "' from recording");
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Gets all worlds that are being recorded
+     *
+     * @return Liste der aufgenommenen Welten
+     */
+    public List<World> getRecordedWorldObjects() {
+        return recordedWorlds.stream()
+                .map(Bukkit::getWorld)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Checks if a player should be recorded based on world filter
+     *
+     * @param player Spieler
+     * @return true wenn der Spieler aufgenommen werden soll
+     */
+    private boolean shouldRecordPlayer(Player player) {
+        if (recordedWorlds.isEmpty()) {
+            return true; // Keine Filter = alle Spieler
+        }
+        return recordedWorlds.contains(player.getWorld().getName());
+    }
+
+    /**
+     * Gets all players that are in recorded worlds
+     */
+    private List<Player> getPlayersInRecordedWorlds() {
+        if (recordedWorlds.isEmpty()) {
+            return new ArrayList<>(Bukkit.getOnlinePlayers());
+        }
+
+        return Bukkit.getOnlinePlayers().stream()
+                .filter(this::shouldRecordPlayer)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Called when a player joins - adds them to continuous recording if in recorded world
      */
     public void onPlayerJoin(Player player) {
         if (!isRunning || continuousReplay == null || !continuousReplay.isRecording()) {
+            return;
+        }
+
+        // Prüfe ob Spieler in aufgenommener Welt ist
+        if (!shouldRecordPlayer(player)) {
             return;
         }
 
@@ -103,6 +233,26 @@ public class StaticModeManager {
             playerJoinTimes.put(player.getName(), System.currentTimeMillis());
 
             Bukkit.getLogger().info("[ReplaySystem] Static Mode: Added " + player.getName() + " to continuous recording");
+        }
+    }
+
+    /**
+     * Called when a player changes world - check if still in recorded world
+     */
+    public void onPlayerChangeWorld(Player player, World from, World to) {
+        if (!isRunning || continuousReplay == null || !continuousReplay.isRecording()) {
+            return;
+        }
+
+        boolean wasRecorded = recordedWorlds.isEmpty() || recordedWorlds.contains(from.getName());
+        boolean shouldRecord = shouldRecordPlayer(player);
+
+        if (wasRecorded && !shouldRecord) {
+            // Spieler verlässt aufgenommene Welt - entferne aus Aufnahme
+            Bukkit.getLogger().info("[ReplaySystem] Static Mode: " + player.getName() + " left recorded world");
+        } else if (!wasRecorded && shouldRecord) {
+            // Spieler betritt aufgenommene Welt - füge zur Aufnahme hinzu
+            onPlayerJoin(player);
         }
     }
 
@@ -169,6 +319,11 @@ public class StaticModeManager {
         savedReplay.getData().setActions(filteredActions);
         savedReplay.getData().setDuration(Math.min(bufferDuration, currentTick));
         savedReplay.getData().setWatchers(new HashMap<>(recorder.getData().getWatchers()));
+
+        // Kopiere Welten-Filter
+        if (!recordedWorlds.isEmpty()) {
+            savedReplay.getData().setWorlds(new ArrayList<>(recordedWorlds));
+        }
 
         // Set replay info
         savedReplay.setReplayInfo(new de.teamholy.replay.replaysystem.data.ReplayInfo(

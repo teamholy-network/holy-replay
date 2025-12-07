@@ -10,6 +10,8 @@ import de.teamholy.replay.replaysystem.data.types.ChatData;
 import de.teamholy.replay.replaysystem.recording.StaticModeManager;
 import de.teamholy.replay.replaysystem.replaying.ReplayHelper;
 import de.teamholy.replay.replaysystem.replaying.Replayer;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -51,6 +53,30 @@ public class ReplayAPI implements IReplayAPI {
         }
         replay.recordAll(players);
         return replay;
+    }
+
+    @Override
+    public Replay startRecordingWorlds(String replayId, World... worlds) {
+        return startRecordingWorlds(replayId, Arrays.asList(worlds));
+    }
+
+    @Override
+    public Replay startRecordingWorlds(String replayId, List<World> worlds) {
+        Replay replay = new Replay();
+        if (replayId != null) {
+            replay.setId(replayId);
+        }
+        replay.recordWorlds(worlds);
+        return replay;
+    }
+
+    @Override
+    public Replay startRecordingWorlds(String replayId, String... worldNames) {
+        List<World> worlds = Arrays.stream(worldNames)
+                .map(Bukkit::getWorld)
+                .filter(w -> w != null)
+                .collect(Collectors.toList());
+        return startRecordingWorlds(replayId, worlds);
     }
 
     @Override
@@ -214,6 +240,123 @@ public class ReplayAPI implements IReplayAPI {
         return false;
     }
 
+    @Override
+    public boolean teleportToPlayer(Player watcher, String targetPlayerName) {
+        if (!ReplayHelper.replaySessions.containsKey(watcher.getName())) {
+            return false;
+        }
+
+        Replayer replayer = ReplayHelper.replaySessions.get(watcher.getName());
+        if (replayer == null || !replayer.getNPCList().containsKey(targetPlayerName)) {
+            return false;
+        }
+
+        // Prüfe ob Spieler in aufgenommener Welt ist
+        Replay replay = replayer.getReplay();
+        if (!replay.getData().getWorlds().isEmpty()) {
+            // Es gibt Welt-Filter - prüfe ob Ziel-Spieler in aufgenommener Welt ist
+            // Diese Logik wird in ReplayingUtils.teleportToPlayer implementiert
+        }
+
+        return replayer.getUtils().teleportToPlayer(targetPlayerName);
+    }
+
+    @Override
+    public boolean enableFollowMode(Player watcher, String targetPlayerName) {
+        if (!ReplayHelper.replaySessions.containsKey(watcher.getName())) {
+            return false;
+        }
+
+        Replayer replayer = ReplayHelper.replaySessions.get(watcher.getName());
+        if (replayer == null || !replayer.getNPCList().containsKey(targetPlayerName)) {
+            return false;
+        }
+
+        replayer.setFollowMode(true);
+        replayer.setFollowTarget(targetPlayerName);
+        return true;
+    }
+
+    @Override
+    public boolean disableFollowMode(Player watcher) {
+        if (!ReplayHelper.replaySessions.containsKey(watcher.getName())) {
+            return false;
+        }
+
+        Replayer replayer = ReplayHelper.replaySessions.get(watcher.getName());
+        if (replayer == null) {
+            return false;
+        }
+
+        replayer.setFollowMode(false);
+        replayer.setFollowTarget(null);
+        return true;
+    }
+
+    @Override
+    public boolean isFollowModeEnabled(Player watcher) {
+        if (!ReplayHelper.replaySessions.containsKey(watcher.getName())) {
+            return false;
+        }
+
+        Replayer replayer = ReplayHelper.replaySessions.get(watcher.getName());
+        return replayer != null && replayer.isFollowMode();
+    }
+
+    @Override
+    public Optional<String> getFollowTarget(Player watcher) {
+        if (!ReplayHelper.replaySessions.containsKey(watcher.getName())) {
+            return Optional.empty();
+        }
+
+        Replayer replayer = ReplayHelper.replaySessions.get(watcher.getName());
+        if (replayer == null) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(replayer.getFollowTarget());
+    }
+
+    @Override
+    public List<String> getPlayersInRecordedWorlds(String replayId, long timestamp) {
+        Optional<Replay> replayOpt = getActiveReplay(replayId);
+        if (!replayOpt.isPresent()) {
+            return new ArrayList<>();
+        }
+
+        Replay replay = replayOpt.get();
+        List<String> recordedWorlds = replay.getData().getWorlds();
+
+        // Wenn keine Welt-Filter, gebe alle Spieler zurück
+        if (recordedWorlds.isEmpty()) {
+            return new ArrayList<>(replay.getData().getWatchers().keySet());
+        }
+
+        // TODO: Filtere Spieler basierend auf ihrer Welt zum gegebenen Zeitstempel
+        // Dies erfordert Tracking der Spieler-Welten in den ActionData
+        return new ArrayList<>(replay.getData().getWatchers().keySet());
+    }
+
+    @Override
+    public List<String> getRecordedWorlds(String replayId) {
+        Optional<Replay> replayOpt = getActiveReplay(replayId);
+        if (replayOpt.isPresent()) {
+            return new ArrayList<>(replayOpt.get().getData().getWorlds());
+        }
+
+        // Versuche aus gespeichertem Replay zu laden
+        try {
+            Optional<Replay> loaded = loadReplay(replayId).get();
+            if (loaded.isPresent()) {
+                return new ArrayList<>(loaded.get().getData().getWorlds());
+            }
+        } catch (Exception e) {
+            // Ignore
+        }
+
+        return new ArrayList<>();
+    }
+
     // ========== Loading & Management ==========
 
     @Override
@@ -347,6 +490,45 @@ public class ReplayAPI implements IReplayAPI {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean startStaticMode(World... worlds) {
+        return startStaticMode(Arrays.asList(worlds));
+    }
+
+    @Override
+    public boolean startStaticMode(List<World> worlds) {
+        StaticModeManager manager = StaticModeManager.getInstance();
+        if (!manager.isRecording()) {
+            manager.start(worlds);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean startStaticModeForWorlds(String... worldNames) {
+        List<World> worlds = Arrays.stream(worldNames)
+                .map(Bukkit::getWorld)
+                .filter(w -> w != null)
+                .collect(Collectors.toList());
+        return startStaticMode(worlds);
+    }
+
+    @Override
+    public boolean addWorldToStaticMode(World world) {
+        return StaticModeManager.getInstance().addWorld(world);
+    }
+
+    @Override
+    public boolean removeWorldFromStaticMode(World world) {
+        return StaticModeManager.getInstance().removeWorld(world);
+    }
+
+    @Override
+    public List<World> getStaticModeWorlds() {
+        return StaticModeManager.getInstance().getRecordedWorldObjects();
     }
 
     @Override

@@ -3,6 +3,7 @@ package de.teamholy.replay.api;
 import de.teamholy.replay.replaysystem.Replay;
 import de.teamholy.replay.replaysystem.data.ActionData;
 import de.teamholy.replay.replaysystem.data.ReplayInfo;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -36,11 +37,40 @@ public interface IReplayAPI {
     Replay startRecording(String replayId, List<Player> players);
 
     /**
+     * Startet eine Replay-Aufnahme für bestimmte Welten
+     * Alle Spieler in diesen Welten werden automatisch aufgenommen
+     *
+     * @param replayId ID des Replays (null für auto-generiert)
+     * @param worlds Welten, die aufgenommen werden sollen
+     * @return Das erstellte Replay
+     */
+    Replay startRecordingWorlds(String replayId, World... worlds);
+
+    /**
+     * Startet eine Replay-Aufnahme für eine Liste von Welten
+     * Alle Spieler in diesen Welten werden automatisch aufgenommen
+     *
+     * @param replayId ID des Replays (null für auto-generiert)
+     * @param worlds Liste der Welten
+     * @return Das erstellte Replay
+     */
+    Replay startRecordingWorlds(String replayId, List<World> worlds);
+
+    /**
+     * Startet eine Replay-Aufnahme für bestimmte Welten (by name)
+     * Alle Spieler in diesen Welten werden automatisch aufgenommen
+     *
+     * @param replayId ID des Replays (null für auto-generiert)
+     * @param worldNames Namen der Welten
+     * @return Das erstellte Replay
+     */
+    Replay startRecordingWorlds(String replayId, String... worldNames);
+
+    /**
      * Stoppt eine laufende Aufnahme
      *
      * @param replayId ID des Replays
      * @param save Ob das Replay gespeichert werden soll
-     * @return CompletableFuture das abgeschlossen wird wenn das Replay gestoppt wurde
      */
     void stopRecording(String replayId, boolean save);
 
@@ -50,7 +80,6 @@ public interface IReplayAPI {
      * @param replayId ID des Replays
      * @param save Ob das Replay gespeichert werden soll
      * @param ignoreEmpty Ob leere Replays ignoriert werden sollen
-     * @return CompletableFuture das abgeschlossen wird wenn das Replay gestoppt wurde
      */
     void stopRecording(String replayId, boolean save, boolean ignoreEmpty);
 
@@ -141,6 +170,68 @@ public interface IReplayAPI {
      * @return true wenn erfolgreich
      */
     boolean setPlaybackSpeed(Player watcher, double speed);
+
+    /**
+     * Teleportiert den Zuschauer zu einem Spieler im Replay
+     * Funktioniert nur, wenn der Ziel-Spieler in einer aufgenommenen Welt ist
+     *
+     * @param watcher Zuschauer
+     * @param targetPlayerName Name des Ziel-Spielers
+     * @return true wenn erfolgreich
+     */
+    boolean teleportToPlayer(Player watcher, String targetPlayerName);
+
+    /**
+     * Aktiviert den Verfolger-Modus für einen Zuschauer
+     * Der Zuschauer folgt dem Spieler automatisch, auch zwischen Welten
+     *
+     * @param watcher Zuschauer
+     * @param targetPlayerName Name des zu verfolgenden Spielers
+     * @return true wenn erfolgreich
+     */
+    boolean enableFollowMode(Player watcher, String targetPlayerName);
+
+    /**
+     * Deaktiviert den Verfolger-Modus für einen Zuschauer
+     *
+     * @param watcher Zuschauer
+     * @return true wenn erfolgreich
+     */
+    boolean disableFollowMode(Player watcher);
+
+    /**
+     * Prüft ob der Verfolger-Modus für einen Zuschauer aktiv ist
+     *
+     * @param watcher Zuschauer
+     * @return true wenn Verfolger-Modus aktiv
+     */
+    boolean isFollowModeEnabled(Player watcher);
+
+    /**
+     * Gibt den Namen des Spielers zurück, dem der Zuschauer folgt
+     *
+     * @param watcher Zuschauer
+     * @return Optional mit dem Namen des verfolgten Spielers
+     */
+    Optional<String> getFollowTarget(Player watcher);
+
+    /**
+     * Gibt alle Spieler zurück, die in aufgenommenen Welten im Replay sind
+     * Wird beim Viewer verwendet um zu filtern welche Spieler angezeigt werden
+     *
+     * @param replayId ID des Replays
+     * @param timestamp Zeitstempel im Replay
+     * @return Liste der Spielernamen in aufgenommenen Welten
+     */
+    List<String> getPlayersInRecordedWorlds(String replayId, long timestamp);
+
+    /**
+     * Gibt alle aufgenommenen Welten eines Replays zurück
+     *
+     * @param replayId ID des Replays
+     * @return Liste der Weltnamen
+     */
+    List<String> getRecordedWorlds(String replayId);
 
     // ========== Loading & Management ==========
 
@@ -245,11 +336,61 @@ public interface IReplayAPI {
     // ========== Static Mode ==========
 
     /**
-     * Startet den Static Mode (kontinuierliche Aufnahme)
+     * Startet den Static Mode (kontinuierliche Aufnahme) für alle Spieler
      *
      * @return true wenn erfolgreich gestartet
      */
     boolean startStaticMode();
+
+    /**
+     * Startet den Static Mode für bestimmte Welten
+     * Alle Spieler in diesen Welten werden kontinuierlich aufgenommen
+     *
+     * @param worlds Welten, die aufgenommen werden sollen
+     * @return true wenn erfolgreich gestartet
+     */
+    boolean startStaticMode(World... worlds);
+
+    /**
+     * Startet den Static Mode für eine Liste von Welten
+     * Alle Spieler in diesen Welten werden kontinuierlich aufgenommen
+     *
+     * @param worlds Liste der Welten
+     * @return true wenn erfolgreich gestartet
+     */
+    boolean startStaticMode(List<World> worlds);
+
+    /**
+     * Startet den Static Mode für bestimmte Welten (by name)
+     * Alle Spieler in diesen Welten werden kontinuierlich aufgenommen
+     *
+     * @param worldNames Namen der Welten
+     * @return true wenn erfolgreich gestartet
+     */
+    boolean startStaticModeForWorlds(String... worldNames);
+
+    /**
+     * Fügt eine Welt zum laufenden Static Mode hinzu
+     *
+     * @param world Welt, die hinzugefügt werden soll
+     * @return true wenn erfolgreich
+     */
+    boolean addWorldToStaticMode(World world);
+
+    /**
+     * Entfernt eine Welt aus dem laufenden Static Mode
+     *
+     * @param world Welt, die entfernt werden soll
+     * @return true wenn erfolgreich
+     */
+    boolean removeWorldFromStaticMode(World world);
+
+    /**
+     * Gibt alle Welten zurück, die im Static Mode aufgenommen werden
+     *
+     * @return Liste der aufgenommenen Welten (leer = alle Welten)
+     */
+    List<World> getStaticModeWorlds();
 
     /**
      * Stoppt den Static Mode

@@ -41,18 +41,17 @@ public class ConfigManager {
 			cfg.set("general.is_replay_server", false);
 			cfg.set("general.max_length", 3600);
 			cfg.set("general.save_on_stop", false);
-			cfg.set("general.use_offline_skins", false);
 			cfg.set("general.quality", "high");
-			cfg.set("general.hide_players", false);
+			cfg.set("general.hide_players", true);
 			cfg.set("general.add_new_players", true);
 
 			cfg.set("recording.mode", "API");
-			cfg.set("recording.static_mode_duration", 300);
+			cfg.set("recording.static_mode_duration", 60);
 
 			cfg.set("replaying.progress_display", ReplayProgressType.getDefault().name().toLowerCase());
 
 			cfg.set("recording.blocks.enabled", true);
-			cfg.set("recording.blocks.real_changes", true);
+			cfg.set("recording.blocks.real_changes", false);
 			cfg.set("recording.entities.enabled", false);
 			cfg.set("recording.entities.items.enabled", true);
 

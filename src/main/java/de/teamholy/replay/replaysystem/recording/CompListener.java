@@ -2,6 +2,7 @@ package de.teamholy.replay.replaysystem.recording;
 
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 
 import org.bukkit.entity.Entity;
@@ -30,11 +31,22 @@ public class CompListener extends AbstractListener{
 		this.packetRecorder = packetRecorder;
 	}
 	
+	/**
+	 * Prüft ob ein Spieler in einer Welt ist, die aufgenommen wird
+	 */
+	private boolean isPlayerInRecordedWorld(Player player) {
+		List<String> recordedWorlds = packetRecorder.getRecorder().getData().getWorlds();
+		if (recordedWorlds.isEmpty()) {
+			return true;
+		}
+		return recordedWorlds.contains(player.getWorld().getName());
+	}
+
 	@EventHandler (ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onSwap(PlayerSwapHandItemsEvent e) {
 		Player p = e.getPlayer();
-		if (this.packetRecorder.getRecorder().getPlayers().contains(p.getName())) {
-			
+		if (this.packetRecorder.getRecorder().getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
+
 			InvData data = NPCManager.copyFromPlayer(p, true, true);
 			data.setMainHand(NPCManager.fromItemStack(e.getMainHandItem()));
 			data.setOffHand(NPCManager.fromItemStack(e.getOffHandItem()));
@@ -50,7 +62,7 @@ public class CompListener extends AbstractListener{
 			Player p = (Player) e.getEntity();
 			PlayerWatcher watcher = this.packetRecorder.getRecorder().getData().getWatcher(p.getName());
 			
-			if (this.packetRecorder.getRecorder().getPlayers().contains(p.getName())) {
+			if (this.packetRecorder.getRecorder().getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
 				watcher.setElytra(!p.isGliding());
 
 				this.packetRecorder.addData(p.getName(), new MetadataUpdate(watcher.isBurning(), watcher.isBlocking(), watcher.isElytra()));
@@ -69,7 +81,7 @@ public class CompListener extends AbstractListener{
 				Player p = (Player) en;
 
 				PlayerWatcher watcher = this.packetRecorder.getRecorder().getData().getWatcher(p.getName());
-				if (this.packetRecorder.getRecorder().getPlayers().contains(p.getName())) {
+				if (this.packetRecorder.getRecorder().getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
 					boolean isSwimming = (boolean) swimEvent.getMethod("isSwimming").invoke(e);
 					
 					watcher.setSwimming(isSwimming);

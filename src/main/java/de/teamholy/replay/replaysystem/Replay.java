@@ -1,13 +1,15 @@
 package de.teamholy.replay.replaysystem;
 
 import java.util.Arrays;
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -58,7 +60,30 @@ public class Replay {
 
 		Replay.ACTIVE_REPLAYS.put(this.id, this);
 	}
-	
+
+	/**
+	 * Startet Aufnahme für bestimmte Welten
+	 * Alle Spieler in diesen Welten werden aufgenommen
+	 *
+	 * @param worlds Welten, die aufgenommen werden sollen
+	 */
+	public void recordWorlds(List<World> worlds) {
+		// Filtere Spieler die in den angegebenen Welten sind
+		List<Player> playersInWorlds = new ArrayList<>();
+		for (World world : worlds) {
+			playersInWorlds.addAll(world.getPlayers());
+		}
+
+		// Speichere Weltnamen in den Replay-Daten
+		List<String> worldNames = worlds.stream()
+				.map(World::getName)
+				.collect(Collectors.toList());
+		this.data.setWorlds(worldNames);
+
+		// Starte normale Aufnahme mit den gefundenen Spielern
+		recordAll(playersInWorlds);
+	}
+
 	public void play(Player watcher) {
 		if (!Bukkit.isPrimaryThread()) {
 			Bukkit.getScheduler().runTask(ReplaySystem.getInstance(), () -> startReplay(watcher));

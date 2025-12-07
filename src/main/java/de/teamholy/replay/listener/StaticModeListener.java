@@ -6,11 +6,12 @@ import de.teamholy.replay.replaysystem.recording.StaticModeManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 /**
- * Listener for Static Mode - handles player join/leave events
+ * Listener for Static Mode - handles player join/leave/world change events
  */
 public class StaticModeListener extends AbstractListener {
 
@@ -33,5 +34,14 @@ public class StaticModeListener extends AbstractListener {
         Player player = event.getPlayer();
         StaticModeManager.getInstance().onPlayerLeave(player);
     }
-}
 
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        if (ConfigManager.RECORDING_MODE != RecordingMode.STATIC) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+        StaticModeManager.getInstance().onPlayerChangeWorld(player, event.getFrom(), player.getWorld());
+    }
+}

@@ -1,6 +1,7 @@
 package de.teamholy.replay.replaysystem.data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -24,6 +25,9 @@ public class ReplayData implements Serializable{
 	
 	private HashMap<String, PlayerWatcher> watchers;
 
+	/**
+	 * Liste der aufgenommenen Welten (leer = alle Welten werden aufgenommen)
+	 */
 	private List<String> worlds;
 	
 	private int duration;
@@ -33,11 +37,21 @@ public class ReplayData implements Serializable{
 	public ReplayData() {
 		this.actions = new HashMap<>();
 		this.watchers = new HashMap<>();
-		
+		this.worlds = new ArrayList<>();
+
 		this.quality = ConfigManager.QUALITY;
 	}
 	
 	public PlayerWatcher getWatcher(String name) {
         return watchers.getOrDefault(name, null);
+	}
+
+	/**
+	 * Prüft ob eine Welt aufgenommen wird
+	 * @param worldName Name der Welt
+	 * @return true wenn die Welt aufgenommen wird oder keine Welt-Filter gesetzt sind
+	 */
+	public boolean isWorldRecorded(String worldName) {
+		return worlds.isEmpty() || worlds.contains(worldName);
 	}
 }

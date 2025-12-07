@@ -46,6 +46,8 @@ public class Replayer {
     private double speed, tmpTicks;
 
     private boolean paused, started;
+    private boolean followMode;
+    private String followTarget;
 
     private ReplayingUtils utils;
     private ReplaySession session;
@@ -59,6 +61,8 @@ public class Replayer {
         this.utils = new ReplayingUtils(this);
         this.session = new ReplaySession(this);
         this.paused = false;
+        this.followMode = false;
+        this.followTarget = null;
     }
 
 
@@ -110,6 +114,24 @@ public class Replayer {
                     executeTick(currentTicks++, ReplayingMode.PLAYING);
                     if ((currentTicks + 2) < duration && speed == 2) {
                         executeTick(currentTicks++, ReplayingMode.PLAYING);
+                    }
+
+                    // Follow-Mode: Teleportiere automatisch zum Ziel
+                    if (followMode && followTarget != null && npcs.containsKey(followTarget)) {
+                        INPC target = npcs.get(followTarget);
+                        if (target != null) {
+                            Location targetLoc = target.getLocation();
+                            if (targetLoc != null && targetLoc.getWorld() != null) {
+                                // Prüfe ob Welt gewechselt wurde
+                                if (!watcher.getWorld().equals(targetLoc.getWorld())) {
+                                    // Teleportiere in andere Welt
+                                    watcher.teleport(targetLoc);
+                                } else if (watcher.getLocation().distance(targetLoc) > 5) {
+                                    // Bleibe in der Nähe des Ziels
+                                    watcher.teleport(targetLoc);
+                                }
+                            }
+                        }
                     }
                 } else {
                     stop();
@@ -241,5 +263,21 @@ public class Replayer {
         if (message != null) {
             message.send(this.watcher);
         }
+    }
+
+    public boolean isFollowMode() {
+        return followMode;
+    }
+
+    public void setFollowMode(boolean followMode) {
+        this.followMode = followMode;
+    }
+
+    public String getFollowTarget() {
+        return followTarget;
+    }
+
+    public void setFollowTarget(String followTarget) {
+        this.followTarget = followTarget;
     }
 }

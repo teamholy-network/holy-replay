@@ -65,6 +65,17 @@ public class PacketRecorder extends AbstractListener {
 		
 	}
 	
+	/**
+	 * Prüft ob ein Spieler in einer Welt ist, die aufgenommen wird
+	 */
+	private boolean isPlayerInRecordedWorld(Player player) {
+		List<String> recordedWorlds = recorder.getData().getWorlds();
+		if (recordedWorlds.isEmpty()) {
+			return true;
+		}
+		return recordedWorlds.contains(player.getWorld().getName());
+	}
+
 	@Override
 	public void register() {
 		super.register();
@@ -84,6 +95,11 @@ public class PacketRecorder extends AbstractListener {
 				if (event.getPlayer() != null && recorder.getPlayers().contains(event.getPlayer().getName())) {
 					Player p = event.getPlayer();
 					
+					// Welt-Check: Nur Pakete von Spielern in aufgenommenen Welten verarbeiten
+					if (!isPlayerInRecordedWorld(p)) {
+						return;
+					}
+
 					PacketData data = null;
 					if (event.getPacketType() == PacketType.Play.Client.POSITION) {
 						WrapperPlayClientPosition packet = new WrapperPlayClientPosition(event.getPacket());
@@ -140,6 +156,11 @@ public class PacketRecorder extends AbstractListener {
 				Player p = event.getPlayer();
 				if (!recorder.getPlayers().contains(p.getName())) return;
 				
+				// Welt-Check: Nur Pakete für Spieler in aufgenommenen Welten verarbeiten
+				if (!isPlayerInRecordedWorld(p)) {
+					return;
+				}
+
 				if (event.getPacketType() == PacketType.Play.Server.EXPLOSION) {
 					addData(p.getName(), ExplosionData.fromPacket(event));
 				}

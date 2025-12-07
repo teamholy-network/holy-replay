@@ -14,6 +14,7 @@ import de.teamholy.replay.utils.VersionUtil;
 import de.teamholy.replay.utils.VersionUtil.VersionEnum;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -48,11 +49,38 @@ public class RecordingListener extends AbstractListener {
 		this.replayLeft = new ArrayList<String>();
 	}
 	
+	/**
+	 * Prüft ob ein Spieler in einer Welt ist, die aufgenommen wird
+	 * @param player Spieler
+	 * @return true wenn die Welt des Spielers aufgenommen wird
+	 */
+	private boolean isPlayerInRecordedWorld(Player player) {
+		List<String> recordedWorlds = recorder.getData().getWorlds();
+		// Wenn keine Welten-Filter gesetzt sind, werden alle Welten aufgenommen
+		if (recordedWorlds.isEmpty()) {
+			return true;
+		}
+		return recordedWorlds.contains(player.getWorld().getName());
+	}
+
+	/**
+	 * Prüft ob ein Block in einer Welt ist, die aufgenommen wird
+	 * @param block Block
+	 * @return true wenn die Welt des Blocks aufgenommen wird
+	 */
+	private boolean isBlockInRecordedWorld(Block block) {
+		List<String> recordedWorlds = recorder.getData().getWorlds();
+		if (recordedWorlds.isEmpty()) {
+			return true;
+		}
+		return recordedWorlds.contains(block.getWorld().getName());
+	}
+
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onClick(InventoryClickEvent e) {
 		if (e.getWhoClicked() instanceof Player) {
 			Player p = (Player) e.getWhoClicked();
-			if (recorder.getPlayers().contains(p.getName())) {
+			if (recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
 				this.packetRecorder.addData(p.getName(), NPCManager.copyFromPlayer(p, true, true));
 			}
 			
@@ -63,7 +91,7 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onHeld(PlayerItemHeldEvent e) {
 		Player p = e.getPlayer();
-		if (recorder.getPlayers().contains(p.getName())) {
+		if (recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
 			ItemStack stack = p.getInventory().getItem(e.getNewSlot());
 			itemInHand(p, stack);
 		}
@@ -75,7 +103,7 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler
 	public void onInteract(PlayerInteractEvent e) {
 		Player p = e.getPlayer();
-		if (recorder.getPlayers().contains(p.getName())) {
+		if (recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
 			if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 				
 				boolean isInteractable = e.getClickedBlock() != null && ItemUtils.isInteractable(e.getClickedBlock().getType());
@@ -124,7 +152,7 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler
 	public void onConsume(PlayerItemConsumeEvent e) {
 		Player p = e.getPlayer();
-		if (recorder.getPlayers().contains(p.getName())) {
+		if (recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
 			if (recorder.getData().getWatcher(p.getName()).isBlocking()) {
 				PlayerWatcher watcher = this.recorder.getData().getWatcher(p.getName());
 				watcher.setBlocking(false);
@@ -145,8 +173,8 @@ public class RecordingListener extends AbstractListener {
 	public void onDamage(EntityDamageEvent e) {
 		if (e.getEntity() instanceof Player) {
 			Player p = (Player) e.getEntity();
-			if (recorder.getPlayers().contains(p.getName())) {
-				
+			if (recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
+
 				this.packetRecorder.addData(p.getName(), new AnimationData(1));
 				
 				if (p.getFireTicks() > 20 && !this.recorder.getData().getWatcher(p.getName()).isBurning()) {
@@ -173,7 +201,8 @@ public class RecordingListener extends AbstractListener {
 		if (e.getEntity() instanceof Player && e.getDamager() instanceof Player) {
 			Player damager = (Player) e.getDamager();
 			Player victim = (Player) e.getEntity();
-			if (recorder.getPlayers().contains(damager.getName()) && recorder.getPlayers().contains(victim.getName())) {
+			if (recorder.getPlayers().contains(damager.getName()) && recorder.getPlayers().contains(victim.getName())
+				&& isPlayerInRecordedWorld(damager) && isPlayerInRecordedWorld(victim)) {
 				if (damager.getFallDistance() > 0.0F && !damager.isOnGround() && damager.getVehicle() == null) {
 					
 					this.packetRecorder.addData(victim.getName(), new AnimationData(4));
@@ -185,8 +214,8 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler
 	public void onChat(AsyncPlayerChatEvent e) {
 		Player p = e.getPlayer();
-		if (recorder.getPlayers().contains(p.getName())) {
-			
+		if (recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
+
 			this.packetRecorder.addData(p.getName(), new ChatData(e.getMessage()));
 		}
 		
@@ -196,8 +225,8 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onBed(PlayerBedEnterEvent e) {
 		Player p = e.getPlayer();
-		if (recorder.getPlayers().contains(p.getName())) {
-			
+		if (recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
+
 			this.packetRecorder.addData(p.getName(), new BedEnterData(LocationData.fromLocation(e.getBed().getLocation())));
 		}
 		
@@ -206,8 +235,8 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onBedLeave(PlayerBedLeaveEvent e) {
 		Player p = e.getPlayer();
-		if (recorder.getPlayers().contains(p.getName())) {
-			
+		if (recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
+
 			this.packetRecorder.addData(p.getName(), new AnimationData(2));
 		}
 		
@@ -227,6 +256,12 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler
 	public void onJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
+
+		// Prüfe ob Spieler in einer aufgenommenen Welt joined
+		if (!isPlayerInRecordedWorld(p)) {
+			return;
+		}
+
 		if (!this.recorder.getPlayers().contains(p.getName()) && (this.replayLeft.contains(p.getName())) || ConfigManager.ADD_PLAYERS) {
 			this.recorder.getPlayers().add(p.getName());
 			this.recorder.getData().getWatchers().put(p.getName(), new PlayerWatcher(p.getName()));
@@ -239,7 +274,7 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler
 	public void onDeath(PlayerDeathEvent e) {
 		Player p = e.getEntity();
-		if (this.recorder.getPlayers().contains(p.getName())) {
+		if (this.recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
 			this.recorder.addData(this.recorder.getCurrentTick(), new ActionData(0, ActionType.DEATH, p.getName(), null));
 		}
 	}
@@ -247,18 +282,31 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onRespawn(PlayerRespawnEvent e) {
 		Player p = e.getPlayer();
+
+		// Prüfe sowohl aktuelle Welt als auch Respawn-Welt
+		List<String> recordedWorlds = this.recorder.getData().getWorlds();
+		boolean respawnWorldRecorded = recordedWorlds.isEmpty() || recordedWorlds.contains(e.getRespawnLocation().getWorld().getName());
+
 		if (this.recorder.getPlayers().contains(p.getName())) {
-			
-			this.recorder.createSpawnAction(p, e.getRespawnLocation(), false);
+			if (respawnWorldRecorded) {
+				// Respawn in aufgenommener Welt - erstelle Spawn-Action
+				this.recorder.createSpawnAction(p, e.getRespawnLocation(), false);
+			} else {
+				// Respawn in nicht-aufgenommener Welt - entferne Spieler aus Aufnahme
+				this.recorder.addData(this.recorder.getCurrentTick(), new ActionData(0, ActionType.DESPAWN, p.getName(), null));
+				this.recorder.getPlayers().remove(p.getName());
+				if (!this.replayLeft.contains(p.getName())) {
+					this.replayLeft.add(p.getName());
+				}
+			}
 		}
-		
 	}
 	
 	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void onThrow(PlayerDropItemEvent e) {
 		Player p = e.getPlayer();
-		if (this.recorder.getPlayers().contains(p.getName())) {
+		if (this.recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
 			InvData data = NPCManager.copyFromPlayer(p, true, true);
 			// Check if item in hand is thrown
 			if (data.getMainHand() != null && p.getItemInHand() != null && p.getItemInHand().getAmount() <= 1 && p.getItemInHand().getType() == data.getMainHand().toMaterial()) {
@@ -274,7 +322,7 @@ public class RecordingListener extends AbstractListener {
 		Projectile proj = e.getEntity();
 		if (proj.getShooter() instanceof Player) {
 			Player p = (Player) proj.getShooter();
-			if (this.recorder.getPlayers().contains(p.getName())) {
+			if (this.recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
 				LocationData spawn = LocationData.fromLocation(p.getEyeLocation());
 				LocationData velocity = LocationData.fromLocation(proj.getVelocity().toLocation(p.getWorld()));
 				
@@ -287,7 +335,7 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onPickup(PlayerPickupItemEvent e) {
 		Player p = e.getPlayer();
-		if (this.recorder.getPlayers().contains(p.getName())) {
+		if (this.recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
 			// Change PlayerItemInHand
 			
 			if (p.getItemInHand() == null || p.getItemInHand().getType() == Material.AIR) {
@@ -300,7 +348,7 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onPlace(BlockPlaceEvent e) {
 		Player p = e.getPlayer();
-		if (this.recorder.getPlayers().contains(p.getName())) {
+		if (this.recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p) && isBlockInRecordedWorld(e.getBlockPlaced())) {
 			LocationData location = LocationData.fromLocation(e.getBlockPlaced().getLocation());
 
 
@@ -321,7 +369,7 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onBreak(BlockBreakEvent e) {
 		Player p = e.getPlayer();
-		if (this.recorder.getPlayers().contains(p.getName())) {
+		if (this.recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p) && isBlockInRecordedWorld(e.getBlock())) {
 			recordBlockBreak(p, e.getBlock());
 		}
 	}
@@ -334,9 +382,12 @@ public class RecordingListener extends AbstractListener {
 		if (!(tnt.getSource() instanceof Player)) return;
 		
 		Player p = (Player) tnt.getSource();
-		if (!this.recorder.getPlayers().contains(p.getName())) return;
-		
+		if (!this.recorder.getPlayers().contains(p.getName()) || !isPlayerInRecordedWorld(p)) return;
+
 		for (Block block : e.blockList()) {
+			// Nur Blöcke in aufgenommenen Welten aufnehmen
+			if (!isBlockInRecordedWorld(block)) continue;
+
 			//Block change is done by the explosion packet.
 			// We record the block data for reversed playing, real_changes=true and world reset
 			recordBlockBreak(p, block, false, false);
@@ -354,8 +405,8 @@ public class RecordingListener extends AbstractListener {
 		if (block.getType() != Material.TNT) return;
 		Player p = e.getPlayer();
 		if(p.isSneaking()) return;
-		if (!this.recorder.getPlayers().contains(p.getName())) return;
-		
+		if (!this.recorder.getPlayers().contains(p.getName()) || !isPlayerInRecordedWorld(p) || !isBlockInRecordedWorld(block)) return;
+
 		recordBlockBreak(e.getPlayer(), block, false, true);
 	}
 	
@@ -376,7 +427,7 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onFill(PlayerBucketFillEvent e) {
 		Player p = e.getPlayer();
-		if (this.recorder.getPlayers().contains(p.getName())) {
+		if (this.recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p) && isBlockInRecordedWorld(e.getBlockClicked())) {
 			LocationData location = LocationData.fromLocation(e.getBlockClicked().getLocation());
 			
 			ItemData before = ItemData.fromBlock(e.getBlockClicked());
@@ -400,8 +451,10 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onEmpty(PlayerBucketEmptyEvent e) {
 		Player p = e.getPlayer();
-		if (this.recorder.getPlayers().contains(p.getName())) {
+		if (this.recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
 			Block block = e.getBlockClicked().getRelative(e.getBlockFace());
+			if (!isBlockInRecordedWorld(block)) return;
+
 			LocationData location = LocationData.fromLocation(block.getLocation());
 			
 			ItemData before = ItemData.fromBlock(block);
@@ -425,19 +478,50 @@ public class RecordingListener extends AbstractListener {
 	@EventHandler
 	public void onWorldChange(PlayerChangedWorldEvent e) {
 		Player p = e.getPlayer();
-		if (this.recorder.getPlayers().contains(p.getName())) {
-			LocationData location = LocationData.fromLocation(p.getLocation());
-
-			this.packetRecorder.addData(p.getName(), new WorldChangeData(location));
-			this.packetRecorder.getRecorder().getData().getWorlds().add(e.getPlayer().getWorld().getName());
+		if (!this.recorder.getPlayers().contains(p.getName())) {
+			return;
 		}
-		
+
+		World fromWorld = e.getFrom();
+		World toWorld = p.getWorld();
+
+		List<String> recordedWorlds = this.recorder.getData().getWorlds();
+		boolean fromRecorded = recordedWorlds.isEmpty() || recordedWorlds.contains(fromWorld.getName());
+		boolean toRecorded = recordedWorlds.isEmpty() || recordedWorlds.contains(toWorld.getName());
+
+		// Spieler wechselt zwischen aufgenommenen Welten
+		if (fromRecorded && toRecorded) {
+			LocationData location = LocationData.fromLocation(p.getLocation());
+			this.packetRecorder.addData(p.getName(), new WorldChangeData(location));
+
+			// Füge Ziel-Welt zu Liste hinzu (falls nicht vorhanden)
+			if (!recordedWorlds.isEmpty() && !recordedWorlds.contains(toWorld.getName())) {
+				this.recorder.getData().getWorlds().add(toWorld.getName());
+			}
+		}
+		// Spieler verlässt aufgenommene Welt → Despawn
+		else if (fromRecorded && !toRecorded) {
+			this.recorder.addData(this.recorder.getCurrentTick(), new ActionData(0, ActionType.DESPAWN, p.getName(), null));
+			this.recorder.getPlayers().remove(p.getName());
+			if (!this.replayLeft.contains(p.getName())) {
+				this.replayLeft.add(p.getName());
+			}
+		}
+		// Spieler betritt aufgenommene Welt → Spawn
+		else if (!fromRecorded && toRecorded) {
+			if (!this.recorder.getPlayers().contains(p.getName())) {
+				this.recorder.getPlayers().add(p.getName());
+				this.recorder.getData().getWatchers().put(p.getName(), new PlayerWatcher(p.getName()));
+				this.recorder.createSpawnAction(p, p.getLocation(), false);
+				this.recorder.addData(this.recorder.getCurrentTick(), new ActionData(this.recorder.getCurrentTick(), ActionType.MESSAGE, p.getName(), new ChatData(Messages.REPLAYING_PLAYER_JOIN.arg("name", p.getName()).build())));
+			}
+		}
 	}
 
 	@EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onSneak(PlayerToggleSneakEvent e) {
 		Player p = e.getPlayer();
-		if (VersionUtil.isAbove(VersionEnum.V1_21) && this.recorder.getPlayers().contains(p.getName())) {
+		if (VersionUtil.isAbove(VersionEnum.V1_21) && this.recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
 
 			EnumWrappers.PlayerAction action = e.isSneaking() ? EnumWrappers.PlayerAction.START_SNEAKING : EnumWrappers.PlayerAction.STOP_SNEAKING;
 			this.packetRecorder.addData(p.getName(), new EntityActionData(action));

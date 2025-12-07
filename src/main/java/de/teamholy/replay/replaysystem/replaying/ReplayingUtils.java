@@ -733,4 +733,44 @@ public class ReplayingUtils {
     public HashMap<Integer, Entity> getEntities() {
         return itemEntities;
     }
+
+    /**
+     * Teleportiert den Zuschauer zu einem NPC/Spieler im Replay
+     * Prüft ob der Zielspieler in einer aufgenommenen Welt ist (falls Welt-Filter aktiv)
+     *
+     * @param targetPlayerName Name des Ziel-NPCs
+     * @return true wenn erfolgreich teleportiert
+     */
+    public boolean teleportToPlayer(String targetPlayerName) {
+        if (!replayer.getNPCList().containsKey(targetPlayerName)) {
+            return false;
+        }
+
+        INPC target = replayer.getNPCList().get(targetPlayerName);
+        if (target == null) {
+            return false;
+        }
+
+        Location targetLocation = target.getLocation();
+        if (targetLocation == null || targetLocation.getWorld() == null) {
+            return false;
+        }
+
+        // Prüfe Welt-Filter
+        List<String> recordedWorlds = replayer.getReplay().getData().getWorlds();
+        if (!recordedWorlds.isEmpty()) {
+            // Es gibt Welt-Filter - prüfe ob Ziel in aufgenommener Welt ist
+            if (!recordedWorlds.contains(targetLocation.getWorld().getName())) {
+                replayer.sendMessage("§cDieser Spieler ist nicht in einer aufgenommenen Welt!");
+                return false;
+            }
+        }
+
+        // Teleportiere zum Ziel
+        replayer.getWatchingPlayer().teleport(targetLocation);
+        replayer.sendMessage("§aTeleportiert zu §e" + targetPlayerName);
+        return true;
+    }
 }
+
+

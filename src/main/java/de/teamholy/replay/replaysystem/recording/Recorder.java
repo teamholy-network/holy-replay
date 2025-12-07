@@ -34,7 +34,8 @@ public class Recorder {
 
     public Recorder(Replay replay, List<Player> players) {
         this.players = new ArrayList<>();
-        this.data = new ReplayData();
+        // Verwende existierende ReplayData vom Replay-Objekt
+        this.data = replay.getData();
         this.replay = replay;
 
         HashMap<String, PlayerWatcher> tmpWatchers = new HashMap<>();

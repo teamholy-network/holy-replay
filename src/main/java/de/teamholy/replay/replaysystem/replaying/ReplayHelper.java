@@ -75,6 +75,22 @@ public class ReplayHelper {
 
     public static void createTeleporter(Player player, Replayer replayer, int page) {
         List<String> npcNames = new ArrayList<>(replayer.getNPCList().keySet());
+
+        // Filtere NPCs basierend auf Welt-Filter
+        List<String> recordedWorlds = replayer.getReplay().getData().getWorlds();
+        if (!recordedWorlds.isEmpty()) {
+            // Nur NPCs in aufgenommenen Welten anzeigen
+            npcNames = npcNames.stream()
+                    .filter(name -> {
+                        de.teamholy.replay.replaysystem.utils.entities.INPC npc = replayer.getNPCList().get(name);
+                        if (npc != null && npc.getLocation() != null && npc.getLocation().getWorld() != null) {
+                            return recordedWorlds.contains(npc.getLocation().getWorld().getName());
+                        }
+                        return false;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
         int size = (int) Math.ceil(npcNames.size() / 9.0) * 9;
 
         int pageSize = 9 * 5;
