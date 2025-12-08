@@ -1,15 +1,12 @@
-package de.teamholy.replay.replaysystem.replaying;
+package de.teamholy.replay.replayserver;
 
 
 import com.comphenix.packetwrapper.*;
 import com.comphenix.protocol.wrappers.EnumWrappers.PlayerAction;
-import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.comphenix.protocol.wrappers.WrappedSignedProperty;
 import de.teamholy.replay.ReplaySystem;
 import de.teamholy.replay.filesystem.ConfigManager;
-import de.teamholy.replay.filesystem.MessageBuilder;
-import de.teamholy.replay.filesystem.Messages;
 import de.teamholy.replay.legacy.LegacyBlock;
 import de.teamholy.replay.replaysystem.data.ActionData;
 import de.teamholy.replay.replaysystem.data.ActionType;
@@ -346,12 +343,6 @@ public class ReplayingUtils {
                 SpawnData oldSpawnData = new SpawnData(npc.getUuid(), LocationData.fromLocation(npc.getLocation()), signatures.get(action.getName()), npc.getDisplayName());
                 this.lastSpawnActions.addLast(new ActionData(0, ActionType.SPAWN, action.getName(), oldSpawnData));
 
-                if (action.getType() == ActionType.DESPAWN) {
-                    replayer.sendMessage(Messages.REPLAYING_PLAYER_LEAVE.arg("name", action.getName()));
-                } else {
-                    replayer.sendMessage(Messages.REPLAYING_PLAYER_DEATH.arg("name", action.getName()));
-                }
-
             } else {
 
                 if (!this.lastSpawnActions.isEmpty()) {
@@ -463,11 +454,11 @@ public class ReplayingUtils {
         npc.setData(new MetadataBuilder().resetValue().getData());
 
 
-        if (ConfigManager.HIDE_PLAYERS && !action.getName().equals(this.replayer.getWatchingPlayer().getName())) {
+        if (!action.getName().equals(this.replayer.getWatchingPlayer().getName())) {
             tabMode = 2;
         }
 
-        if ((spawnData.getSignature() != null && (Bukkit.getPlayer(action.getName()) == null || VersionUtil.isAbove(VersionEnum.V1_14))) || (spawnData.getSignature() != null && ConfigManager.HIDE_PLAYERS && !action.getName().equals(this.replayer.getWatchingPlayer().getName()))) {
+        if ((spawnData.getSignature() != null && (Bukkit.getPlayer(action.getName()) == null || VersionUtil.isAbove(VersionEnum.V1_14))) || (spawnData.getSignature() != null && !action.getName().equals(this.replayer.getWatchingPlayer().getName()))) {
             WrappedGameProfile profile = new WrappedGameProfile(spawnData.getUuid(), action.getName());
             WrappedSignedProperty signed = new WrappedSignedProperty(spawnData.getSignature().getName(), spawnData.getSignature().getValue(), spawnData.getSignature().getSignature());
             profile.getProperties().put(spawnData.getSignature().getName(), signed);

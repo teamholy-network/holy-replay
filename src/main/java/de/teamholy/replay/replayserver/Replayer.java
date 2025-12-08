@@ -1,4 +1,4 @@
-package de.teamholy.replay.replaysystem.replaying;
+package de.teamholy.replay.replayserver;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import de.teamholy.replay.filesystem.MessageBuilder;
 import de.teamholy.replay.filesystem.Messages;
-import de.teamholy.replay.replaysystem.replaying.session.ReplaySession;
+import de.teamholy.replay.replayserver.session.ReplaySession;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;

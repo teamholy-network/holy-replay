@@ -4,7 +4,7 @@ import java.util.List;
 
 import de.teamholy.replay.replaysystem.data.ActionData;
 import de.teamholy.replay.replaysystem.data.types.PacketData;
-import de.teamholy.replay.replaysystem.replaying.Replayer;
+import de.teamholy.replay.replayserver.Replayer;
 
 public interface IReplayHook {
 

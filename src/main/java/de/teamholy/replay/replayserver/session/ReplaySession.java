@@ -1,11 +1,11 @@
-package de.teamholy.replay.replaysystem.replaying.session;
+package de.teamholy.replay.replayserver.session;
 
 import java.util.Arrays;
 import java.util.List;
 
-import de.teamholy.replay.replaysystem.replaying.ReplayHelper;
-import de.teamholy.replay.replaysystem.replaying.ReplayPacketListener;
-import de.teamholy.replay.replaysystem.replaying.Replayer;
+import de.teamholy.replay.replayserver.ReplayHelper;
+import de.teamholy.replay.replayserver.ReplayPacketListener;
+import de.teamholy.replay.replayserver.Replayer;
 import org.bukkit.Bukkit;
 
 import org.bukkit.GameMode;
@@ -23,9 +23,9 @@ import de.teamholy.replay.filesystem.ItemConfigType;
 
 public class ReplaySession {
 
-	private Replayer replayer;
+	private final Replayer replayer;
 	
-	private Player player;
+	private final Player player;
 	
 	private ItemStack content[];
 	
@@ -35,8 +35,8 @@ public class ReplaySession {
 	
 	private Location start;
 	
-	private ReplayPacketListener packetListener;
-	
+	private final ReplayPacketListener packetListener;
+
 	public ReplaySession(Replayer replayer) {
 		this.replayer = replayer;
 		
@@ -74,26 +74,17 @@ public class ReplaySession {
 				this.player.getInventory().setItem(item.getSlot(), ReplayHelper.createItem(item));
 			});
 		
-		
+
 		this.player.setAllowFlight(true);
 		this.player.setFlying(true);
-		
-		if (ConfigManager.HIDE_PLAYERS) {
-			for (Player all : Bukkit.getOnlinePlayers()) {
-				if (all == this.player) continue;
-				this.player.hidePlayer(all);
-			}
-		}
 	}
 	
 	public void stopSession() {
-		if (ReplayHelper.replaySessions.containsKey(this.player.getName())) {
-			ReplayHelper.replaySessions.remove(this.player.getName());
-		}
+        ReplayHelper.replaySessions.remove(this.player.getName());
 		
 		this.packetListener.unregister();
 
-		
+
 		new BukkitRunnable() {
 			
 			@Override
@@ -101,15 +92,6 @@ public class ReplaySession {
 				resetPlayer();
 				
 				player.teleport(start);
-				
-				
-				if (ConfigManager.HIDE_PLAYERS) {
-					for (Player all : Bukkit.getOnlinePlayers()) {
-						if (all == player) continue;
-						
-						player.showPlayer(all);
-					}
-				}
 
 				ReplaySessionFinishEvent finishEvent = new ReplaySessionFinishEvent(replayer.getReplay(), player);
 				Bukkit.getPluginManager().callEvent(finishEvent);

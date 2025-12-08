@@ -1,4 +1,4 @@
-package de.teamholy.replay.replaysystem.replaying;
+package de.teamholy.replay.replayserver;
 
 public enum ReplayingMode {
     PLAYING,

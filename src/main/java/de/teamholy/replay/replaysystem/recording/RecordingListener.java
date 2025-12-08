@@ -211,17 +211,6 @@ public class RecordingListener extends AbstractListener {
 		}
 	}
 	
-	@EventHandler
-	public void onChat(AsyncPlayerChatEvent e) {
-		Player p = e.getPlayer();
-		if (recorder.getPlayers().contains(p.getName()) && isPlayerInRecordedWorld(p)) {
-
-			this.packetRecorder.addData(p.getName(), new ChatData(e.getMessage()));
-		}
-		
-	}
-	
-	
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onBed(PlayerBedEnterEvent e) {
 		Player p = e.getPlayer();
@@ -266,8 +255,6 @@ public class RecordingListener extends AbstractListener {
 			this.recorder.getPlayers().add(p.getName());
 			this.recorder.getData().getWatchers().put(p.getName(), new PlayerWatcher(p.getName()));
 			this.recorder.createSpawnAction(p, p.getLocation(), false);
-			this.recorder.addData(this.recorder.getCurrentTick(), new ActionData(this.recorder.getCurrentTick(), ActionType.MESSAGE, p.getName(), new ChatData(Messages.REPLAYING_PLAYER_JOIN.arg("name", p.getName()).build())));
-			
 		}
 	}
 	
@@ -513,7 +500,6 @@ public class RecordingListener extends AbstractListener {
 				this.recorder.getPlayers().add(p.getName());
 				this.recorder.getData().getWatchers().put(p.getName(), new PlayerWatcher(p.getName()));
 				this.recorder.createSpawnAction(p, p.getLocation(), false);
-				this.recorder.addData(this.recorder.getCurrentTick(), new ActionData(this.recorder.getCurrentTick(), ActionType.MESSAGE, p.getName(), new ChatData(Messages.REPLAYING_PLAYER_JOIN.arg("name", p.getName()).build())));
 			}
 		}
 	}

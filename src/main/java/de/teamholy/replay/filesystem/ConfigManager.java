@@ -5,15 +5,13 @@ import java.io.File;
 import java.io.IOException;
 
 import de.teamholy.replay.replaysystem.recording.RecordingMode;
-import de.teamholy.replay.replaysystem.replaying.session.ReplayProgressType;
-import de.teamholy.replay.replaysystem.replaying.session.ReplayProgression;
-import org.bukkit.configuration.InvalidConfigurationException;
+import de.teamholy.replay.replayserver.session.ReplayProgressType;
+import de.teamholy.replay.replayserver.session.ReplayProgression;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import de.teamholy.replay.ReplaySystem;
 import de.teamholy.replay.replaysystem.recording.optimization.ReplayQuality;
-
 public class ConfigManager {
 
 	public static File file = new File(ReplaySystem.getInstance().getDataFolder(), "config.yml");
@@ -28,21 +26,20 @@ public class ConfigManager {
 
 	public static boolean RECORD_BLOCKS, REAL_CHANGES;
 	public static boolean RECORD_ITEMS, RECORD_ENTITIES;
-	public static boolean SAVE_STOP, HIDE_PLAYERS, ADD_PLAYERS;
+	public static boolean SAVE_STOP, ADD_PLAYERS;
 
 	public static ReplayProgression PROGRESS_TYPE = ReplayProgressType.XP_BAR;
 
 	public static ReplayQuality QUALITY = ReplayQuality.HIGH;
-	
+
 
 	public static void loadConfigs() {
-		
+
 		if (!file.exists()) {
 			cfg.set("general.is_replay_server", false);
 			cfg.set("general.max_length", 3600);
 			cfg.set("general.save_on_stop", false);
 			cfg.set("general.quality", "high");
-			cfg.set("general.hide_players", true);
 			cfg.set("general.add_new_players", true);
 
 			cfg.set("recording.mode", "API");
@@ -62,20 +59,19 @@ public class ConfigManager {
 				e.printStackTrace();
 			}
 		}
-			
+
 		ItemConfig.loadConfig();
 		Messages.loadMessages();
-		
+
 		loadData();
-		
+
 	}
-	
-	public static void loadData() {
+
+	private static void loadData() {
 		IS_REPLAY_SERVER = cfg.getBoolean("general.is_replay_server");
 		MAX_LENGTH = cfg.getInt("general.max_length");
 		SAVE_STOP = cfg.getBoolean("general.save_on_stop");
 		QUALITY = ReplayQuality.valueOf(cfg.getString("general.quality", "high").toUpperCase());
-		HIDE_PLAYERS = cfg.getBoolean("general.hide_players");
 		ADD_PLAYERS = cfg.getBoolean("general.add_new_players");
 
 		RECORDING_MODE = RecordingMode.valueOf(cfg.getString("recording.mode", "API").toUpperCase());

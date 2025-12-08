@@ -1,10 +1,11 @@
-package de.teamholy.replay.replaysystem.replaying;
+package de.teamholy.replay.replayserver;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import lombok.Getter;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
@@ -28,11 +29,12 @@ public class ReplayPacketListener extends AbstractListener {
 	
 	private PacketAdapter packetAdapter;
 	
-	private Replayer replayer;
+	private final Replayer replayer;
 	
-	private int previous;
+	@Getter
+    private int previous;
 	
-	private HashMap<Player, Integer> spectating;
+	private final HashMap<Player, Integer> spectating;
 	
 	public ReplayPacketListener(Replayer replayer) {
 		this.replayer = replayer;
@@ -96,12 +98,8 @@ public class ReplayPacketListener extends AbstractListener {
 	public boolean isRegistered() {
 		return this.packetAdapter != null;
 	}
-	
-	public int getPrevious() {
-		return previous;
-	}
-	
-	public boolean isSpectating(Player p) {
+
+    public boolean isSpectating(Player p) {
 		return this.spectating.containsKey(p);
 	}
 	
@@ -124,8 +122,6 @@ public class ReplayPacketListener extends AbstractListener {
 		
 		if (gamemode == 3F) {
 			this.spectating.put(p, entityID);
-		} else if (this.spectating.containsKey(p)){
-			this.spectating.remove(p);
-		}
+		} else this.spectating.remove(p);
 	}
 }

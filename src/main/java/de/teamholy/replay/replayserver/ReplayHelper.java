@@ -1,4 +1,4 @@
-package de.teamholy.replay.replaysystem.replaying;
+package de.teamholy.replay.replayserver;
 
 import com.comphenix.packetwrapper.WrapperPlayServerTitle;
 import com.comphenix.protocol.wrappers.EnumWrappers.TitleAction;

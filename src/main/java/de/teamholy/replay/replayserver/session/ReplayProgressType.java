@@ -1,8 +1,7 @@
-package de.teamholy.replay.replaysystem.replaying.session;
+package de.teamholy.replay.replayserver.session;
 
-import de.teamholy.replay.replaysystem.replaying.Replayer;
+import de.teamholy.replay.replayserver.Replayer;
 import de.teamholy.replay.utils.VersionUtil;
-import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
