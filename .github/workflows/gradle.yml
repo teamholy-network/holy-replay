@@ -26,4 +26,6 @@ jobs:
           HolyRepoPass: ${{ secrets.HolyRepoPass }}
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          ./gradlew clean publish -PprojectVersion="$VERSION"
+          curl -u "$HolyRepoUser:$HolyRepoPass" \
+            --upload-file build/libs/holy-replay-$VERSION.jar \
+            "https://repo.gin1.cc/repository/holy-replay/$VERSION/holy-replay-$VERSION.jar"
