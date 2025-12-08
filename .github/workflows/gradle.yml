@@ -10,6 +10,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
 
+    env:
+      HolyRepoUser: ${{ secrets.HolyRepoUser }}
+      HolyRepoPass: ${{ secrets.HolyRepoPass }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,12 +24,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Publish shadow jar to Nexus
-        env:
-          HolyRepoUser: ${{ secrets.HolyRepoUser }}
-          HolyRepoPass: ${{ secrets.HolyRepoPass }}
+      - name: Build shadow jar
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          ./gradlew clean shadowJar -PprojectVersion="$VERSION"
+
+      - name: Upload shadow jar to Nexus (RAW)
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           curl -u "$HolyRepoUser:$HolyRepoPass" \
-            --upload-file build/libs/holy-replay-$VERSION.jar \
+            --upload-file "build/libs/holy-replay-$VERSION.jar" \
             "https://repo.gin1.cc/repository/holy-replay/$VERSION/holy-replay-$VERSION.jar"
