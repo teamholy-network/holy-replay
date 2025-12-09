@@ -3,7 +3,10 @@ package de.teamholy.replay.api;
 import de.teamholy.replay.replaysystem.Replay;
 import de.teamholy.replay.replaysystem.data.ActionData;
 import de.teamholy.replay.replaysystem.data.ReplayInfo;
+import de.teamholy.replay.replaysystem.data.types.BlockChangeData;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -112,11 +115,32 @@ public interface IReplayAPI {
     /*
     * Fügt einer laufenden Aufnahme eine Nachricht hinzu
     * @param replayId ID des Replays
-    * @param message Die hinzuzufü
+    * @param message Die hinzuzü
     * gende Nachricht
     *
      */
     void addMessageToRecording(String replayId, String message);
+
+    /**
+     * Fügt einer laufenden Aufnahme einen BlockChange hinzu.
+     * Wird verwendet, wenn ein anderes Plugin einen Block verändert/abbaut und
+     * dies im Replay festgehalten werden soll.
+     *
+     * @param replayId ID des Replays
+     * @param oldBlock Der vorherige Block
+     * @param newBlock Der neue Block (Material)
+     *
+     */
+    void addBlockChangeToRecording(String replayId, Block oldBlock, Material newBlock);
+
+    /**
+     * Fügt allen laufenden Aufnahmen einen BlockChange hinzu.
+     *
+     * @param oldBlock Der vorherige Block
+     * @param newBlock Der neue Block (Material)
+     *
+     */
+    void addBlockChangeToAllRecordings(Block oldBlock, Material newBlock);
 
     // ========== Playback ==========
 
@@ -417,7 +441,7 @@ public interface IReplayAPI {
     /**
      * Speichert eine bestimmte Anzahl Minuten aus dem Static Mode
      *
-     * @param replayId ID für das gespeicherte Replay (null für auto-generiert)
+     * @param replayId ID für das gespeicherten Replay (null für auto-generiert)
      * @param minutes Anzahl der zu speichernden Minuten
      * @return CompletableFuture mit der ID des gespeicherten Replays
      */
@@ -439,4 +463,3 @@ public interface IReplayAPI {
      */
     void unregisterHook(IReplayHook hook);
 }
-

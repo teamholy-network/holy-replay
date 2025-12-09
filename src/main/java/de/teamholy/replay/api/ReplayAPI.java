@@ -1,23 +1,27 @@
 package de.teamholy.replay.api;
 
 import de.teamholy.replay.ReplaySystem;
+import de.teamholy.replay.filesystem.ConfigManager;
 import de.teamholy.replay.filesystem.saving.IReplaySaver;
 import de.teamholy.replay.replaysystem.Replay;
 import de.teamholy.replay.replaysystem.data.ActionData;
 import de.teamholy.replay.replaysystem.data.ActionType;
 import de.teamholy.replay.replaysystem.data.ReplayInfo;
+import de.teamholy.replay.replaysystem.data.types.BlockChangeData;
 import de.teamholy.replay.replaysystem.data.types.ChatData;
+import de.teamholy.replay.replaysystem.data.types.ItemData;
+import de.teamholy.replay.replaysystem.data.types.LocationData;
 import de.teamholy.replay.replaysystem.recording.StaticModeManager;
 import de.teamholy.replay.replayserver.ReplayHelper;
 import de.teamholy.replay.replayserver.Replayer;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -143,6 +147,57 @@ public class ReplayAPI implements IReplayAPI {
                         "SYSTEM",
                         chatData
                 );
+                replay.getRecorder().addData(replay.getRecorder().getCurrentTick(), actionData);
+            }
+        }
+    }
+
+    @Override
+    public void addBlockChangeToRecording(String replayId, Block oldBlock, Material newBlock) {
+        if (replayId == null) return;
+        if (Replay.ACTIVE_REPLAYS.containsKey(replayId)) {
+            Replay replay = Replay.ACTIVE_REPLAYS.get(replayId);
+            if (replay.isRecording()) {
+                LocationData location = LocationData.fromLocation(oldBlock.getLocation());
+                ItemData before = ItemData.fromBlock(oldBlock);
+                ItemData after = ItemData.fromMaterial(newBlock);
+
+                BlockChangeData blockChangeData = new BlockChangeData(
+                        location, before, after, true, true
+                );
+
+                ActionData actionData = new ActionData(
+                        replay.getRecorder().getCurrentTick(),
+                        ActionType.CUSTOM,
+                        "SYSTEM",
+                        blockChangeData
+                );
+
+                replay.getRecorder().addData(replay.getRecorder().getCurrentTick(), actionData);
+            }
+        }
+    }
+
+    @Override
+    public void addBlockChangeToAllRecordings(Block oldBlock, Material newBlock) {
+        for (Replay replay : Replay.ACTIVE_REPLAYS.values()) {
+            if (replay.isRecording()) {
+                LocationData location = LocationData.fromLocation(oldBlock.getLocation());
+                ItemData before = ItemData.fromBlock(oldBlock);
+                ItemData after = ItemData.fromMaterial(newBlock);
+
+
+                BlockChangeData blockChangeData = new BlockChangeData(
+                        location, before, after, true, true
+                );
+
+                ActionData actionData = new ActionData(
+                        replay.getRecorder().getCurrentTick(),
+                        ActionType.CUSTOM,
+                        "SYSTEM",
+                        blockChangeData
+                );
+
                 replay.getRecorder().addData(replay.getRecorder().getCurrentTick(), actionData);
             }
         }
@@ -504,7 +559,7 @@ public class ReplayAPI implements IReplayAPI {
     public boolean startStaticModeForWorlds(String... worldNames) {
         List<World> worlds = Arrays.stream(worldNames)
                 .map(Bukkit::getWorld)
-                .filter(w -> w != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         return startStaticMode(worlds);
     }
