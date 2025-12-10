@@ -11,6 +11,7 @@ import de.teamholy.replay.replaysystem.data.types.BlockChangeData;
 import de.teamholy.replay.replaysystem.data.types.ChatData;
 import de.teamholy.replay.replaysystem.data.types.ItemData;
 import de.teamholy.replay.replaysystem.data.types.LocationData;
+import de.teamholy.replay.replaysystem.data.types.NameTagData;
 import de.teamholy.replay.replaysystem.recording.StaticModeManager;
 import de.teamholy.replay.replayserver.ReplayHelper;
 import de.teamholy.replay.replayserver.Replayer;
@@ -146,6 +147,48 @@ public class ReplayAPI implements IReplayAPI {
                         ActionType.MESSAGE,
                         "SYSTEM",
                         chatData
+                );
+                replay.getRecorder().addData(replay.getRecorder().getCurrentTick(), actionData);
+            }
+        }
+    }
+
+    @Override
+    public void addNameTagData(String replayId, String playerName, String tabListPrefix,
+                               String tabListSuffix, String displayNamePrefix, String displayNameSuffix) {
+        if (Replay.ACTIVE_REPLAYS.containsKey(replayId)) {
+            Replay replay = Replay.ACTIVE_REPLAYS.get(replayId);
+            if (replay.isRecording()) {
+                NameTagData nameTagData = new NameTagData(
+                    tabListPrefix, tabListSuffix,
+                    displayNamePrefix, displayNameSuffix
+                );
+
+                ActionData actionData = new ActionData(
+                        replay.getRecorder().getCurrentTick(),
+                        ActionType.NAMETAG,
+                        playerName,
+                        nameTagData
+                );
+                replay.getRecorder().addData(replay.getRecorder().getCurrentTick(), actionData);
+            }
+        }
+    }
+
+    public void addNameTagDataToAllRecordings(String playerName, String tabListPrefix,
+                                              String tabListSuffix, String displayNamePrefix, String displayNameSuffix) {
+        for (Replay replay : Replay.ACTIVE_REPLAYS.values()) {
+            if (replay.isRecording()) {
+                NameTagData nameTagData = new NameTagData(
+                    tabListPrefix, tabListSuffix,
+                    displayNamePrefix, displayNameSuffix
+                );
+
+                ActionData actionData = new ActionData(
+                        replay.getRecorder().getCurrentTick(),
+                        ActionType.NAMETAG,
+                        playerName,
+                        nameTagData
                 );
                 replay.getRecorder().addData(replay.getRecorder().getCurrentTick(), actionData);
             }

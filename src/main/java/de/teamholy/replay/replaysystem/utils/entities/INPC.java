@@ -37,6 +37,9 @@ public interface INPC {
 	
 	void addToTeam(String team);
 	
+	void updateNameTag(String tabListPrefix, String tabListSuffix,
+	                   String displayNamePrefix, String displayNameSuffix);
+
 	int getId();
 	
 	String getName();

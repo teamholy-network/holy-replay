@@ -76,6 +76,20 @@ public class ReplayingUtils {
             replayer.sendMessage(message.getMessage());
         }
 
+        if (action.getType() == ActionType.NAMETAG && !reversed) {
+            if (this.replayer.getNPCList().containsKey(action.getName())) {
+                INPC npc = this.replayer.getNPCList().get(action.getName());
+                NameTagData nameTagData = (NameTagData) action.getPacketData();
+
+                npc.updateNameTag(
+                    nameTagData.getTabListPrefix(),
+                    nameTagData.getTabListSuffix(),
+                    nameTagData.getDisplayNamePrefix(),
+                    nameTagData.getDisplayNameSuffix()
+                );
+            }
+        }
+
         if (action.getType() == ActionType.PACKET && this.replayer.getNPCList().containsKey(action.getName())) {
             INPC npc = this.replayer.getNPCList().get(action.getName());
 

@@ -122,6 +122,32 @@ public interface IReplayAPI {
     void addMessageToRecording(String replayId, String message);
 
     /**
+     * Fügt einer laufenden Aufnahme NameTag-Daten hinzu.
+     * Wird verwendet, wenn MarkupAPI TabList/DisplayName Prefix/Suffix ändert.
+     *
+     * @param replayId ID des Replays
+     * @param playerName Name des Spielers dessen NameTag geändert werden soll
+     * @param tabListPrefix Prefix für die TabList (kann null sein)
+     * @param tabListSuffix Suffix für die TabList (kann null sein)
+     * @param displayNamePrefix Prefix für den DisplayName (kann null sein)
+     * @param displayNameSuffix Suffix für den DisplayName (kann null sein)
+     */
+    void addNameTagData(String replayId, String playerName, String tabListPrefix,
+                       String tabListSuffix, String displayNamePrefix, String displayNameSuffix);
+
+    /**
+     * Fügt allen laufenden Aufnahmen NameTag-Daten hinzu.
+     *
+     * @param playerName Name des Spielers dessen NameTag geändert werden soll
+     * @param tabListPrefix Prefix für die TabList (kann null sein)
+     * @param tabListSuffix Suffix für die TabList (kann null sein)
+     * @param displayNamePrefix Prefix für den DisplayName (kann null sein)
+     * @param displayNameSuffix Suffix für den DisplayName (kann null sein)
+     */
+    void addNameTagDataToAllRecordings(String playerName, String tabListPrefix,
+                                      String tabListSuffix, String displayNamePrefix, String displayNameSuffix);
+
+    /**
      * Fügt einer laufenden Aufnahme einen BlockChange hinzu.
      * Wird verwendet, wenn ein anderes Plugin einen Block verändert/abbaut und
      * dies im Replay festgehalten werden soll.

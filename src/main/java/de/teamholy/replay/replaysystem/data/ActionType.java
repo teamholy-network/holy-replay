@@ -8,5 +8,6 @@ public enum ActionType {
 	DEATH,
 	WORLD,
 	MESSAGE,
+	NAMETAG,
 	CUSTOM;
 }

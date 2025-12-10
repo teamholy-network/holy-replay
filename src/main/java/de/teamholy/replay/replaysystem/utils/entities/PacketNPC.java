@@ -310,6 +310,64 @@ public class PacketNPC implements INPC {
 		}
 	}
 	
+	@Override
+	public void updateNameTag(String tabListPrefix, String tabListSuffix,
+	                          String displayNamePrefix, String displayNameSuffix) {
+		if (tabListPrefix != null || tabListSuffix != null) {
+			WrapperPlayServerScoreboardTeam teamPacket = new WrapperPlayServerScoreboardTeam();
+			String teamName = "replay_" + this.name.substring(0, Math.min(this.name.length(), 10));
+
+			teamPacket.setName(teamName);
+			teamPacket.setMode(Mode.TEAM_UPDATED);
+			teamPacket.setPrefix(tabListPrefix != null ? tabListPrefix : "");
+			teamPacket.setSuffix(tabListSuffix != null ? tabListSuffix : "");
+			teamPacket.setPlayers(Arrays.asList(this.name));
+
+			for(Player player : this.visible) {
+				if(player != null) {
+					WrapperPlayServerScoreboardTeam createTeam = new WrapperPlayServerScoreboardTeam();
+					createTeam.setName(teamName);
+					createTeam.setMode(Mode.TEAM_CREATED);
+					createTeam.setPrefix(tabListPrefix != null ? tabListPrefix : "");
+					createTeam.setSuffix(tabListSuffix != null ? tabListSuffix : "");
+					createTeam.setPlayers(Arrays.asList(this.name));
+
+					try {
+						createTeam.sendPacket(player);
+					} catch (Exception e) {
+						teamPacket.sendPacket(player);
+					}
+				}
+			}
+		}
+
+		if (displayNamePrefix != null || displayNameSuffix != null) {
+			String prefix = displayNamePrefix != null ? displayNamePrefix : "";
+			String suffix = displayNameSuffix != null ? displayNameSuffix : "";
+			String newDisplayName = prefix + this.name + suffix;
+
+			this.displayName = newDisplayName;
+
+			if (this.tabMode != 0) {
+				WrapperPlayServerPlayerInfo updatePacket = new WrapperPlayServerPlayerInfo();
+				updatePacket.setAction(EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME);
+
+				WrappedGameProfile profile = this.profile != null ? this.profile : new WrappedGameProfile(this.uuid, this.name);
+				PlayerInfoData data = new PlayerInfoData(profile, 1, EnumWrappers.NativeGameMode.CREATIVE, WrappedChatComponent.fromText(newDisplayName));
+				List<PlayerInfoData> dataList = new ArrayList<>();
+				dataList.add(data);
+
+				updatePacket.setData(dataList);
+
+				for(Player player : this.visible) {
+					if(player != null) {
+						updatePacket.sendPacket(player);
+					}
+				}
+			}
+		}
+	}
+
 	public WrapperPlayServerPlayerInfo getInfoAddPacket() {
 		WrapperPlayServerPlayerInfo infoPacket = new WrapperPlayServerPlayerInfo();
 		infoPacket.setAction(EnumWrappers.PlayerInfoAction.ADD_PLAYER);
